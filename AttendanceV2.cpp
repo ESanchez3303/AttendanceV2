@@ -1,10 +1,10 @@
 #include "AttendanceV2.h"
 
-
 using namespace System;
 using namespace System::Windows::Forms;
-void main(array<String^>^ args) {
 
+[STAThreadAttribute]
+void main(array<String^>^ args) {
 
 	// Making the files needed if not already made
 	using namespace std;
@@ -28,7 +28,6 @@ void main(array<String^>^ args) {
 		}
 	}
 	
-
 	// Starting GUI
 	Application::EnableVisualStyles();
 	Application::SetCompatibleTextRenderingDefault(false);
