@@ -14,7 +14,7 @@ void main(array<String^>^ args) {
 	ofstream makingLocation;
 	
 	byte const filesAmount = 4;
-	string fileNames[filesAmount] = { "admins", "employees", "properties", "log"};
+	string fileNames[filesAmount] = { "admins", "employees", "properties", "logs"};
 
 	// Checking for .txt files
 	for (byte i = 0; i < filesAmount; i++) {

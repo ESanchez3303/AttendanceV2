@@ -1,18 +1,23 @@
 #pragma once
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <Windows.h>
 #include <string>
 #include <msclr/marshal_cppstd.h>
 #include <cstdio>
+#include <iomanip>
+#include <ctime>
+using namespace msclr::interop;
 
 
 std::string adminsFile = "C:\\Attendance\\admins.txt";
-std::string employeesFile = "C:\\Attendance\\Employees.txt";
+std::string employeesFile = "C:\\Attendance\\employees.txt";
 std::string logsFile = "C:\\Attendance\\logs.txt";
 std::string settingsFile = "C:\\Attendance\\settings.txt";
 
 std::string savedAdminUsername = "";
+std::string loggedInAdmin = "NO_USER";
 
 namespace AttendanceV2 {
 	using namespace std;
@@ -28,7 +33,7 @@ namespace AttendanceV2 {
 	public:
 		AttendanceV2(void) {
 			InitializeComponent();
-			rePaintAllPanels();
+			
 		}
 
 	protected:
@@ -45,7 +50,10 @@ namespace AttendanceV2 {
 		Color textColor = Color::DarkSlateGray;
 		Color buttonPushedBackColor = Color::DarkGoldenrod;
 		Color buttonPushedForeColor = Color::White;
-
+		double settings_PointsLimit = 5;
+		double settings_latePoints = 0.5;
+		double settings_absentPoints = 2;
+		
 		
 
 
@@ -69,140 +77,97 @@ namespace AttendanceV2 {
 		System::Windows::Forms::Timer^ sideMenuTimer;
 		System::Windows::Forms::Panel^ markEmployeePanel;
 		System::Windows::Forms::Panel^ editAddEmployeePanel;
-
 		System::Windows::Forms::Panel^ settingsPanel;
 		System::Windows::Forms::Label^ addEmployeeButton;
 		System::Windows::Forms::Label^ editEmployeeButton;
 		System::Windows::Forms::Panel^ addEmployeeWorkPanel;
 		System::Windows::Forms::Panel^ editEmployeeWorkPanel;
-	protected: System::Windows::Forms::Label^ addEmployeeWorkText3;
-
-	protected: System::Windows::Forms::Label^ addEmployeeWorkText2;
-
-	protected: System::Windows::Forms::Label^ addEmployeeWorkText1;
-	protected: System::Windows::Forms::TextBox^ addEmployeeWorkEmployeeID;
-
-
-
-	protected: System::Windows::Forms::TextBox^ addEmployeeWorkLastName;
-
-	protected: System::Windows::Forms::TextBox^ addEmployeeWorkFirstName;
-	private: System::Windows::Forms::Button^ addEmployeeWorkSaveButton;
-	private: System::Windows::Forms::Label^ editEmployeeWorkText1;
-	private: System::Windows::Forms::ComboBox^ editEmployeeComboBox;
-
-
-	private: System::Windows::Forms::Button^ editEmployeeWorkRemoveEmployee;
-
-	private: System::Windows::Forms::Button^ editEmployeeWorkSaveButton;
-
-	private: System::Windows::Forms::Label^ editEmployeeWorkText4;
-
-	private: System::Windows::Forms::Label^ editEmployeeWorkText3;
-
-	private: System::Windows::Forms::Label^ editEmployeeWorkText2;
-	private: System::Windows::Forms::TextBox^ editEmployeeWorkCurrentPoints;
-
-	private: System::Windows::Forms::TextBox^ editEmployeeWorkEmployeeID;
-
-	private: System::Windows::Forms::TextBox^ editEmployeeWorkLastName;
-
-	private: System::Windows::Forms::TextBox^ editEmployeeWorkFirstName;
-
-	private: System::Windows::Forms::Label^ editEmployeeWorkText5;
-	private: System::Windows::Forms::Panel^ editEmployeeRemoveConfirmPanel;
-	private: System::Windows::Forms::Label^ editEmployeeRemoveCancelButton;
-
-	private: System::Windows::Forms::Label^ editEmployeeRemoveConfirmButton;
-	protected: System::Windows::Forms::Panel^ adminPanel;
-	protected: System::Windows::Forms::Label^ editAdminButton;
-
-	protected: System::Windows::Forms::Panel^ addAdminWorkPanel;
-	private: System::Windows::Forms::Button^ addAdminSaveButton;
-	protected:
-	private:
-
-
-
-	protected: System::Windows::Forms::TextBox^ addAdminWorkPassword;
-	private:
-	protected:
-
-	private:
-
-protected: System::Windows::Forms::TextBox^ addAdminWorkUsername;
-
-protected: System::Windows::Forms::Label^ addAdminWorkText2;
-
-
-protected: System::Windows::Forms::Label^ addAdminWorkText1;
-protected: System::Windows::Forms::Label^ addAdminButton;
-protected: System::Windows::Forms::Panel^ editAdminWorkPanel;
-private: System::Windows::Forms::Panel^ editAdminRemoveConfirmPanel;
+		System::Windows::Forms::Label^ addEmployeeWorkText3;
+		System::Windows::Forms::Label^ addEmployeeWorkText2;
+		System::Windows::Forms::Label^ addEmployeeWorkText1;
+		System::Windows::Forms::TextBox^ addEmployeeWorkEmployeeID;
+		System::Windows::Forms::TextBox^ addEmployeeWorkLastName;
+		System::Windows::Forms::TextBox^ addEmployeeWorkFirstName;
+		System::Windows::Forms::Button^ addEmployeeWorkSaveButton;
+		System::Windows::Forms::Label^ editEmployeeWorkText1;
+		System::Windows::Forms::ComboBox^ editEmployeeComboBox;
+		System::Windows::Forms::Button^ editEmployeeWorkRemoveEmployee;
+		System::Windows::Forms::Button^ editEmployeeWorkSaveButton;
+		System::Windows::Forms::Label^ editEmployeeWorkText4;
+		System::Windows::Forms::Label^ editEmployeeWorkText3;
+		System::Windows::Forms::Label^ editEmployeeWorkText2;
+		System::Windows::Forms::TextBox^ editEmployeeWorkCurrentPoints;
+		System::Windows::Forms::TextBox^ editEmployeeWorkEmployeeID;
+		System::Windows::Forms::TextBox^ editEmployeeWorkLastName;
+		System::Windows::Forms::TextBox^ editEmployeeWorkFirstName;
+		System::Windows::Forms::Label^ editEmployeeWorkText5;
+		System::Windows::Forms::Panel^ editEmployeeRemoveConfirmPanel;
+		System::Windows::Forms::Label^ editEmployeeRemoveCancelButton;
+		System::Windows::Forms::Label^ editEmployeeRemoveConfirmButton;
+		System::Windows::Forms::Panel^ adminPanel;
+		System::Windows::Forms::Label^ editAdminButton;
+		System::Windows::Forms::Panel^ addAdminWorkPanel;
+		System::Windows::Forms::Button^ addAdminSaveButton;
+		System::Windows::Forms::TextBox^ addAdminWorkPassword;
+		System::Windows::Forms::TextBox^ addAdminWorkUsername;
+		System::Windows::Forms::Label^ addAdminWorkText2;
+		System::Windows::Forms::Label^ addAdminWorkText1;
+		System::Windows::Forms::Label^ addAdminButton;
+		System::Windows::Forms::Panel^ editAdminWorkPanel;
+		System::Windows::Forms::Panel^ editAdminRemoveConfirmPanel;
+		System::Windows::Forms::Label^ editAdminRemoveCancelButton;
+		System::Windows::Forms::Label^ editAdminRemoveConfirmButton;
+		System::Windows::Forms::TextBox^ editAdminWorkConfirmedPassword;
+		System::Windows::Forms::TextBox^ editAdminWorkPassword;
+		System::Windows::Forms::TextBox^ editAdminWorkUsername;
+		System::Windows::Forms::Button^ editAdminRemoveButton;
+		System::Windows::Forms::Button^ editAdminSaveButton;
+		System::Windows::Forms::Label^ editAdminText4;
+		System::Windows::Forms::Label^ editAdminText3;
+		System::Windows::Forms::Label^ editAdminText2;
+		System::Windows::Forms::ComboBox^ editAdminComboBox;
+		System::Windows::Forms::Label^ editAdminText1;
+		System::Windows::Forms::TextBox^ addAdminWorkConfirmedPassword;
+		System::Windows::Forms::Label^ addAdminWorkText3;
+		System::Windows::Forms::Panel^ markEmployeeBackgroundPanel;
+		System::Windows::Forms::Label^ markEmployeeAttendanceLimit;
+		System::Windows::Forms::Panel^ markEmployeeActionConfrimPanel;
+		System::Windows::Forms::Label^ markEmployeeActionCancelButton;
+		System::Windows::Forms::Label^ markEmployeeActionConfirmButton;
+		System::Windows::Forms::Label^ markEmployeeText2;
+		System::Windows::Forms::ListView^ markEmployeeListView;
+		System::Windows::Forms::ColumnHeader^ employeeName;
+		System::Windows::Forms::ColumnHeader^ employeeID;
+		System::Windows::Forms::ColumnHeader^ attendanceCount;
+		System::Windows::Forms::Label^ ignore_2;
+		System::Windows::Forms::Label^ ignore_1;
+		System::Windows::Forms::Label^ markEmployeeText1;
+		System::Windows::Forms::ComboBox^ markEmployeeComboBox;
+		System::Windows::Forms::Panel^ panel1;
+		System::Windows::Forms::TextBox^ textBox1;
+		System::Windows::Forms::Label^ label1;
+		System::Windows::Forms::Button^ markEmployeeMarkLateButton;
+		System::Windows::Forms::Button^ button1;
+		System::Windows::Forms::Label^ label4;
+		System::Windows::Forms::TextBox^ textBox3;
+		System::Windows::Forms::Label^ label3;
+		System::Windows::Forms::TextBox^ textBox2;
+		System::Windows::Forms::Label^ label2;
+		System::Windows::Forms::Button^ markEmployeeMarkAbsentButton;
+		System::Windows::Forms::Panel^ panel3;
+		System::Windows::Forms::Panel^ panel2;
+		System::Windows::Forms::Label^ label6;
+		System::Windows::Forms::Label^ label5;
+		System::Windows::Forms::RichTextBox^ richTextBox1;
+private: System::ComponentModel::IContainer^ components;
 protected:
 
-private: System::Windows::Forms::Label^ editAdminRemoveCancelButton;
-
-private: System::Windows::Forms::Label^ editAdminRemoveConfirmButton;
-
-protected:
-
-
-
-
-
-
-
-	protected:
-
-
-private: System::Windows::Forms::TextBox^ editAdminWorkConfirmedPassword;
-
-
-private: System::Windows::Forms::TextBox^ editAdminWorkPassword;
-
-private: System::Windows::Forms::TextBox^ editAdminWorkUsername;
-private: System::Windows::Forms::Button^ editAdminRemoveButton;
-
-
-
-private: System::Windows::Forms::Button^ editAdminSaveButton;
-
-private: System::Windows::Forms::Label^ editAdminText4;
-
-private: System::Windows::Forms::Label^ editAdminText3;
-
-private: System::Windows::Forms::Label^ editAdminText2;
-private: System::Windows::Forms::ComboBox^ editAdminComboBox;
-
-
-private: System::Windows::Forms::Label^ editAdminText1;
-
-protected: System::Windows::Forms::TextBox^ addAdminWorkConfirmedPassword;
-private:
-
-protected: System::Windows::Forms::Label^ addAdminWorkText3;
-private:
-
-
-	private:
-
-
-
-
-
-
-	protected:
-
-
-	protected:
-	private: System::ComponentModel::IContainer^ components;
-	protected:
 
 
 #pragma region Windows Form Designer generated code
 		void InitializeComponent(void){
 			this->components = (gcnew System::ComponentModel::Container());
+			System::Windows::Forms::ListViewItem^ listViewItem2 = (gcnew System::Windows::Forms::ListViewItem(L"employee1"));
 			this->login_username = (gcnew System::Windows::Forms::TextBox());
 			this->login_password = (gcnew System::Windows::Forms::TextBox());
 			this->login_text1 = (gcnew System::Windows::Forms::Label());
@@ -222,6 +187,22 @@ private:
 			this->markEmployeeLabel = (gcnew System::Windows::Forms::Label());
 			this->sideMenuTimer = (gcnew System::Windows::Forms::Timer(this->components));
 			this->markEmployeePanel = (gcnew System::Windows::Forms::Panel());
+			this->markEmployeeBackgroundPanel = (gcnew System::Windows::Forms::Panel());
+			this->markEmployeeActionConfrimPanel = (gcnew System::Windows::Forms::Panel());
+			this->markEmployeeActionCancelButton = (gcnew System::Windows::Forms::Label());
+			this->markEmployeeActionConfirmButton = (gcnew System::Windows::Forms::Label());
+			this->markEmployeeMarkAbsentButton = (gcnew System::Windows::Forms::Button());
+			this->markEmployeeMarkLateButton = (gcnew System::Windows::Forms::Button());
+			this->markEmployeeAttendanceLimit = (gcnew System::Windows::Forms::Label());
+			this->markEmployeeText2 = (gcnew System::Windows::Forms::Label());
+			this->markEmployeeListView = (gcnew System::Windows::Forms::ListView());
+			this->employeeName = (gcnew System::Windows::Forms::ColumnHeader());
+			this->employeeID = (gcnew System::Windows::Forms::ColumnHeader());
+			this->attendanceCount = (gcnew System::Windows::Forms::ColumnHeader());
+			this->markEmployeeText1 = (gcnew System::Windows::Forms::Label());
+			this->markEmployeeComboBox = (gcnew System::Windows::Forms::ComboBox());
+			this->ignore_2 = (gcnew System::Windows::Forms::Label());
+			this->ignore_1 = (gcnew System::Windows::Forms::Label());
 			this->editAddEmployeePanel = (gcnew System::Windows::Forms::Panel());
 			this->editEmployeeButton = (gcnew System::Windows::Forms::Label());
 			this->addEmployeeWorkPanel = (gcnew System::Windows::Forms::Panel());
@@ -250,6 +231,20 @@ private:
 			this->editEmployeeComboBox = (gcnew System::Windows::Forms::ComboBox());
 			this->editEmployeeWorkText1 = (gcnew System::Windows::Forms::Label());
 			this->settingsPanel = (gcnew System::Windows::Forms::Panel());
+			this->panel3 = (gcnew System::Windows::Forms::Panel());
+			this->richTextBox1 = (gcnew System::Windows::Forms::RichTextBox());
+			this->label6 = (gcnew System::Windows::Forms::Label());
+			this->panel2 = (gcnew System::Windows::Forms::Panel());
+			this->label5 = (gcnew System::Windows::Forms::Label());
+			this->panel1 = (gcnew System::Windows::Forms::Panel());
+			this->button1 = (gcnew System::Windows::Forms::Button());
+			this->label4 = (gcnew System::Windows::Forms::Label());
+			this->textBox3 = (gcnew System::Windows::Forms::TextBox());
+			this->label3 = (gcnew System::Windows::Forms::Label());
+			this->textBox2 = (gcnew System::Windows::Forms::TextBox());
+			this->label2 = (gcnew System::Windows::Forms::Label());
+			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
+			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->adminPanel = (gcnew System::Windows::Forms::Panel());
 			this->editAdminButton = (gcnew System::Windows::Forms::Label());
 			this->addAdminWorkPanel = (gcnew System::Windows::Forms::Panel());
@@ -282,10 +277,17 @@ private:
 			this->adminButton->SuspendLayout();
 			this->editAddEmployeeButton->SuspendLayout();
 			this->markEmployeeButton->SuspendLayout();
+			this->markEmployeePanel->SuspendLayout();
+			this->markEmployeeBackgroundPanel->SuspendLayout();
+			this->markEmployeeActionConfrimPanel->SuspendLayout();
 			this->editAddEmployeePanel->SuspendLayout();
 			this->addEmployeeWorkPanel->SuspendLayout();
 			this->editEmployeeWorkPanel->SuspendLayout();
 			this->editEmployeeRemoveConfirmPanel->SuspendLayout();
+			this->settingsPanel->SuspendLayout();
+			this->panel3->SuspendLayout();
+			this->panel2->SuspendLayout();
+			this->panel1->SuspendLayout();
 			this->adminPanel->SuspendLayout();
 			this->addAdminWorkPanel->SuspendLayout();
 			this->editAdminWorkPanel->SuspendLayout();
@@ -296,9 +298,10 @@ private:
 			// 
 			this->login_username->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->login_username->Location = System::Drawing::Point(109, 18);
+			this->login_username->Location = System::Drawing::Point(206, 35);
+			this->login_username->Margin = System::Windows::Forms::Padding(6);
 			this->login_username->Name = L"login_username";
-			this->login_username->Size = System::Drawing::Size(167, 23);
+			this->login_username->Size = System::Drawing::Size(330, 38);
 			this->login_username->TabIndex = 0;
 			this->login_username->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -306,9 +309,10 @@ private:
 			// 
 			this->login_password->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->login_password->Location = System::Drawing::Point(109, 50);
+			this->login_password->Location = System::Drawing::Point(206, 96);
+			this->login_password->Margin = System::Windows::Forms::Padding(6);
 			this->login_password->Name = L"login_password";
-			this->login_password->Size = System::Drawing::Size(167, 23);
+			this->login_password->Size = System::Drawing::Size(330, 38);
 			this->login_password->TabIndex = 1;
 			this->login_password->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			this->login_password->UseSystemPasswordChar = true;
@@ -316,27 +320,30 @@ private:
 			// login_text1
 			// 
 			this->login_text1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10));
-			this->login_text1->Location = System::Drawing::Point(25, 18);
+			this->login_text1->Location = System::Drawing::Point(38, 35);
+			this->login_text1->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->login_text1->Name = L"login_text1";
-			this->login_text1->Size = System::Drawing::Size(78, 23);
+			this->login_text1->Size = System::Drawing::Size(156, 44);
 			this->login_text1->TabIndex = 2;
 			this->login_text1->Text = L"Username:";
 			// 
 			// login_text2
 			// 
 			this->login_text2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10));
-			this->login_text2->Location = System::Drawing::Point(25, 50);
+			this->login_text2->Location = System::Drawing::Point(38, 96);
+			this->login_text2->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->login_text2->Name = L"login_text2";
-			this->login_text2->Size = System::Drawing::Size(78, 23);
+			this->login_text2->Size = System::Drawing::Size(156, 44);
 			this->login_text2->TabIndex = 3;
 			this->login_text2->Text = L"Password:";
 			// 
 			// login_button
 			// 
 			this->login_button->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12));
-			this->login_button->Location = System::Drawing::Point(23, 79);
+			this->login_button->Location = System::Drawing::Point(34, 152);
+			this->login_button->Margin = System::Windows::Forms::Padding(6);
 			this->login_button->Name = L"login_button";
-			this->login_button->Size = System::Drawing::Size(253, 40);
+			this->login_button->Size = System::Drawing::Size(506, 77);
 			this->login_button->TabIndex = 4;
 			this->login_button->Text = L"Log in";
 			this->login_button->UseVisualStyleBackColor = true;
@@ -352,9 +359,10 @@ private:
 			this->login_panel->Controls->Add(this->login_text2);
 			this->login_panel->Controls->Add(this->login_text1);
 			this->login_panel->ForeColor = System::Drawing::SystemColors::ControlText;
-			this->login_panel->Location = System::Drawing::Point(61, 404);
+			this->login_panel->Location = System::Drawing::Point(122, 777);
+			this->login_panel->Margin = System::Windows::Forms::Padding(6);
 			this->login_panel->Name = L"login_panel";
-			this->login_panel->Size = System::Drawing::Size(289, 136);
+			this->login_panel->Size = System::Drawing::Size(574, 258);
 			this->login_panel->TabIndex = 5;
 			// 
 			// sidePanel
@@ -367,8 +375,9 @@ private:
 			this->sidePanel->Controls->Add(this->editAddEmployeeButton);
 			this->sidePanel->Controls->Add(this->markEmployeeButton);
 			this->sidePanel->Location = System::Drawing::Point(0, 0);
+			this->sidePanel->Margin = System::Windows::Forms::Padding(6);
 			this->sidePanel->Name = L"sidePanel";
-			this->sidePanel->Size = System::Drawing::Size(31, 370);
+			this->sidePanel->Size = System::Drawing::Size(60, 710);
 			this->sidePanel->TabIndex = 6;
 			this->sidePanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::openMenu);
 			// 
@@ -377,9 +386,10 @@ private:
 			this->mainMenuSidePanel->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->mainMenuSidePanel->BackColor = System::Drawing::Color::Tan;
 			this->mainMenuSidePanel->Controls->Add(this->mainMenuSideLabel);
-			this->mainMenuSidePanel->Location = System::Drawing::Point(0, -1);
+			this->mainMenuSidePanel->Location = System::Drawing::Point(0, -2);
+			this->mainMenuSidePanel->Margin = System::Windows::Forms::Padding(6);
 			this->mainMenuSidePanel->Name = L"mainMenuSidePanel";
-			this->mainMenuSidePanel->Size = System::Drawing::Size(30, 370);
+			this->mainMenuSidePanel->Size = System::Drawing::Size(60, 712);
 			this->mainMenuSidePanel->TabIndex = 4;
 			this->mainMenuSidePanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::openMenu);
 			// 
@@ -388,9 +398,10 @@ private:
 			this->mainMenuSideLabel->BackColor = System::Drawing::Color::Tan;
 			this->mainMenuSideLabel->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->mainMenuSideLabel->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->mainMenuSideLabel->Location = System::Drawing::Point(7, 43);
+			this->mainMenuSideLabel->Location = System::Drawing::Point(14, 83);
+			this->mainMenuSideLabel->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->mainMenuSideLabel->Name = L"mainMenuSideLabel";
-			this->mainMenuSideLabel->Size = System::Drawing::Size(17, 262);
+			this->mainMenuSideLabel->Size = System::Drawing::Size(34, 504);
 			this->mainMenuSideLabel->TabIndex = 3;
 			this->mainMenuSideLabel->Text = L"MAIN & MENU";
 			this->mainMenuSideLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -401,9 +412,10 @@ private:
 			this->settingsLogsButton->BackColor = System::Drawing::Color::Tan;
 			this->settingsLogsButton->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
 			this->settingsLogsButton->Controls->Add(this->settingsLogsLabel);
-			this->settingsLogsButton->Location = System::Drawing::Point(5, 280);
+			this->settingsLogsButton->Location = System::Drawing::Point(10, 538);
+			this->settingsLogsButton->Margin = System::Windows::Forms::Padding(6);
 			this->settingsLogsButton->Name = L"settingsLogsButton";
-			this->settingsLogsButton->Size = System::Drawing::Size(118, 75);
+			this->settingsLogsButton->Size = System::Drawing::Size(232, 141);
 			this->settingsLogsButton->TabIndex = 1;
 			// 
 			// settingsLogsLabel
@@ -413,9 +425,10 @@ private:
 			this->settingsLogsLabel->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 11.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->settingsLogsLabel->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->settingsLogsLabel->Location = System::Drawing::Point(-2, -2);
+			this->settingsLogsLabel->Location = System::Drawing::Point(-4, -4);
+			this->settingsLogsLabel->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->settingsLogsLabel->Name = L"settingsLogsLabel";
-			this->settingsLogsLabel->Size = System::Drawing::Size(118, 75);
+			this->settingsLogsLabel->Size = System::Drawing::Size(236, 144);
 			this->settingsLogsLabel->TabIndex = 1;
 			this->settingsLogsLabel->Text = L"Settings - Logs";
 			this->settingsLogsLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -426,9 +439,10 @@ private:
 			this->adminButton->BackColor = System::Drawing::Color::Tan;
 			this->adminButton->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
 			this->adminButton->Controls->Add(this->adminLabel);
-			this->adminButton->Location = System::Drawing::Point(5, 189);
+			this->adminButton->Location = System::Drawing::Point(10, 363);
+			this->adminButton->Margin = System::Windows::Forms::Padding(6);
 			this->adminButton->Name = L"adminButton";
-			this->adminButton->Size = System::Drawing::Size(118, 75);
+			this->adminButton->Size = System::Drawing::Size(232, 141);
 			this->adminButton->TabIndex = 2;
 			// 
 			// adminLabel
@@ -438,9 +452,10 @@ private:
 			this->adminLabel->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 11.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->adminLabel->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->adminLabel->Location = System::Drawing::Point(-2, -2);
+			this->adminLabel->Location = System::Drawing::Point(-4, -4);
+			this->adminLabel->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->adminLabel->Name = L"adminLabel";
-			this->adminLabel->Size = System::Drawing::Size(118, 75);
+			this->adminLabel->Size = System::Drawing::Size(236, 144);
 			this->adminLabel->TabIndex = 1;
 			this->adminLabel->Text = L"Admins";
 			this->adminLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -451,9 +466,10 @@ private:
 			this->editAddEmployeeButton->BackColor = System::Drawing::Color::Tan;
 			this->editAddEmployeeButton->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
 			this->editAddEmployeeButton->Controls->Add(this->editAddEmployeeLabel);
-			this->editAddEmployeeButton->Location = System::Drawing::Point(5, 99);
+			this->editAddEmployeeButton->Location = System::Drawing::Point(10, 190);
+			this->editAddEmployeeButton->Margin = System::Windows::Forms::Padding(6);
 			this->editAddEmployeeButton->Name = L"editAddEmployeeButton";
-			this->editAddEmployeeButton->Size = System::Drawing::Size(118, 75);
+			this->editAddEmployeeButton->Size = System::Drawing::Size(232, 141);
 			this->editAddEmployeeButton->TabIndex = 1;
 			// 
 			// editAddEmployeeLabel
@@ -463,9 +479,10 @@ private:
 			this->editAddEmployeeLabel->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 11.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
 			this->editAddEmployeeLabel->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editAddEmployeeLabel->Location = System::Drawing::Point(-2, -2);
+			this->editAddEmployeeLabel->Location = System::Drawing::Point(-4, -4);
+			this->editAddEmployeeLabel->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->editAddEmployeeLabel->Name = L"editAddEmployeeLabel";
-			this->editAddEmployeeLabel->Size = System::Drawing::Size(118, 75);
+			this->editAddEmployeeLabel->Size = System::Drawing::Size(236, 144);
 			this->editAddEmployeeLabel->TabIndex = 1;
 			this->editAddEmployeeLabel->Text = L"Edit / Add Employee";
 			this->editAddEmployeeLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -476,9 +493,10 @@ private:
 			this->markEmployeeButton->BackColor = System::Drawing::Color::Tan;
 			this->markEmployeeButton->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
 			this->markEmployeeButton->Controls->Add(this->markEmployeeLabel);
-			this->markEmployeeButton->Location = System::Drawing::Point(5, 10);
+			this->markEmployeeButton->Location = System::Drawing::Point(10, 19);
+			this->markEmployeeButton->Margin = System::Windows::Forms::Padding(6);
 			this->markEmployeeButton->Name = L"markEmployeeButton";
-			this->markEmployeeButton->Size = System::Drawing::Size(118, 75);
+			this->markEmployeeButton->Size = System::Drawing::Size(232, 141);
 			this->markEmployeeButton->TabIndex = 0;
 			// 
 			// markEmployeeLabel
@@ -489,8 +507,9 @@ private:
 				static_cast<System::Byte>(0)));
 			this->markEmployeeLabel->ForeColor = System::Drawing::Color::DarkSlateGray;
 			this->markEmployeeLabel->Location = System::Drawing::Point(0, 0);
+			this->markEmployeeLabel->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->markEmployeeLabel->Name = L"markEmployeeLabel";
-			this->markEmployeeLabel->Size = System::Drawing::Size(118, 75);
+			this->markEmployeeLabel->Size = System::Drawing::Size(236, 144);
 			this->markEmployeeLabel->TabIndex = 0;
 			this->markEmployeeLabel->Text = L"Mark Employee";
 			this->markEmployeeLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -503,14 +522,220 @@ private:
 			// 
 			// markEmployeePanel
 			// 
-			this->markEmployeePanel->BackColor = System::Drawing::Color::Maroon;
-			this->markEmployeePanel->Location = System::Drawing::Point(507, 113);
-			this->markEmployeePanel->Margin = System::Windows::Forms::Padding(2);
+			this->markEmployeePanel->BackColor = System::Drawing::Color::Sienna;
+			this->markEmployeePanel->Controls->Add(this->markEmployeeBackgroundPanel);
+			this->markEmployeePanel->Location = System::Drawing::Point(1184, 87);
+			this->markEmployeePanel->Margin = System::Windows::Forms::Padding(4);
 			this->markEmployeePanel->Name = L"markEmployeePanel";
-			this->markEmployeePanel->Size = System::Drawing::Size(496, 370);
+			this->markEmployeePanel->Size = System::Drawing::Size(992, 712);
 			this->markEmployeePanel->TabIndex = 7;
 			this->markEmployeePanel->Visible = false;
 			this->markEmployeePanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
+			// 
+			// markEmployeeBackgroundPanel
+			// 
+			this->markEmployeeBackgroundPanel->BackColor = System::Drawing::Color::Tan;
+			this->markEmployeeBackgroundPanel->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->markEmployeeBackgroundPanel->Controls->Add(this->markEmployeeActionConfrimPanel);
+			this->markEmployeeBackgroundPanel->Controls->Add(this->markEmployeeMarkAbsentButton);
+			this->markEmployeeBackgroundPanel->Controls->Add(this->markEmployeeMarkLateButton);
+			this->markEmployeeBackgroundPanel->Controls->Add(this->markEmployeeAttendanceLimit);
+			this->markEmployeeBackgroundPanel->Controls->Add(this->markEmployeeText2);
+			this->markEmployeeBackgroundPanel->Controls->Add(this->markEmployeeListView);
+			this->markEmployeeBackgroundPanel->Controls->Add(this->markEmployeeText1);
+			this->markEmployeeBackgroundPanel->Controls->Add(this->markEmployeeComboBox);
+			this->markEmployeeBackgroundPanel->Location = System::Drawing::Point(25, 15);
+			this->markEmployeeBackgroundPanel->Name = L"markEmployeeBackgroundPanel";
+			this->markEmployeeBackgroundPanel->Size = System::Drawing::Size(946, 667);
+			this->markEmployeeBackgroundPanel->TabIndex = 1;
+			this->markEmployeeBackgroundPanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
+			// 
+			// markEmployeeActionConfrimPanel
+			// 
+			this->markEmployeeActionConfrimPanel->BackColor = System::Drawing::Color::Moccasin;
+			this->markEmployeeActionConfrimPanel->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->markEmployeeActionConfrimPanel->Controls->Add(this->markEmployeeActionCancelButton);
+			this->markEmployeeActionConfrimPanel->Controls->Add(this->markEmployeeActionConfirmButton);
+			this->markEmployeeActionConfrimPanel->Location = System::Drawing::Point(44, 160);
+			this->markEmployeeActionConfrimPanel->Name = L"markEmployeeActionConfrimPanel";
+			this->markEmployeeActionConfrimPanel->Size = System::Drawing::Size(855, 127);
+			this->markEmployeeActionConfrimPanel->TabIndex = 6;
+			// 
+			// markEmployeeActionCancelButton
+			// 
+			this->markEmployeeActionCancelButton->BackColor = System::Drawing::Color::Red;
+			this->markEmployeeActionCancelButton->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->markEmployeeActionCancelButton->Cursor = System::Windows::Forms::Cursors::Hand;
+			this->markEmployeeActionCancelButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
+			this->markEmployeeActionCancelButton->ForeColor = System::Drawing::Color::White;
+			this->markEmployeeActionCancelButton->Location = System::Drawing::Point(442, 11);
+			this->markEmployeeActionCancelButton->Name = L"markEmployeeActionCancelButton";
+			this->markEmployeeActionCancelButton->Size = System::Drawing::Size(395, 103);
+			this->markEmployeeActionCancelButton->TabIndex = 3;
+			this->markEmployeeActionCancelButton->Text = L"Cancel";
+			this->markEmployeeActionCancelButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->markEmployeeActionCancelButton->Click += gcnew System::EventHandler(this, &AttendanceV2::markEmployeeActionCancelButton_Click);
+			// 
+			// markEmployeeActionConfirmButton
+			// 
+			this->markEmployeeActionConfirmButton->BackColor = System::Drawing::Color::MediumSeaGreen;
+			this->markEmployeeActionConfirmButton->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->markEmployeeActionConfirmButton->Cursor = System::Windows::Forms::Cursors::Hand;
+			this->markEmployeeActionConfirmButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
+			this->markEmployeeActionConfirmButton->ForeColor = System::Drawing::Color::White;
+			this->markEmployeeActionConfirmButton->Location = System::Drawing::Point(19, 11);
+			this->markEmployeeActionConfirmButton->Name = L"markEmployeeActionConfirmButton";
+			this->markEmployeeActionConfirmButton->Size = System::Drawing::Size(398, 103);
+			this->markEmployeeActionConfirmButton->TabIndex = 2;
+			this->markEmployeeActionConfirmButton->Text = L"Confirm <action>";
+			this->markEmployeeActionConfirmButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->markEmployeeActionConfirmButton->Click += gcnew System::EventHandler(this, &AttendanceV2::markEmployeeActionConfirmButton_Click);
+			// 
+			// markEmployeeMarkAbsentButton
+			// 
+			this->markEmployeeMarkAbsentButton->BackColor = System::Drawing::Color::Moccasin;
+			this->markEmployeeMarkAbsentButton->Cursor = System::Windows::Forms::Cursors::Hand;
+			this->markEmployeeMarkAbsentButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
+			this->markEmployeeMarkAbsentButton->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->markEmployeeMarkAbsentButton->Location = System::Drawing::Point(486, 190);
+			this->markEmployeeMarkAbsentButton->Name = L"markEmployeeMarkAbsentButton";
+			this->markEmployeeMarkAbsentButton->Size = System::Drawing::Size(413, 91);
+			this->markEmployeeMarkAbsentButton->TabIndex = 9;
+			this->markEmployeeMarkAbsentButton->Text = L"Mark Absent";
+			this->markEmployeeMarkAbsentButton->UseVisualStyleBackColor = false;
+			this->markEmployeeMarkAbsentButton->Click += gcnew System::EventHandler(this, &AttendanceV2::markEmployeeMarkAbsentButton_Click);
+			// 
+			// markEmployeeMarkLateButton
+			// 
+			this->markEmployeeMarkLateButton->BackColor = System::Drawing::Color::Moccasin;
+			this->markEmployeeMarkLateButton->Cursor = System::Windows::Forms::Cursors::Hand;
+			this->markEmployeeMarkLateButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
+			this->markEmployeeMarkLateButton->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->markEmployeeMarkLateButton->Location = System::Drawing::Point(48, 190);
+			this->markEmployeeMarkLateButton->Name = L"markEmployeeMarkLateButton";
+			this->markEmployeeMarkLateButton->Size = System::Drawing::Size(413, 91);
+			this->markEmployeeMarkLateButton->TabIndex = 8;
+			this->markEmployeeMarkLateButton->Text = L"Mark Late";
+			this->markEmployeeMarkLateButton->UseVisualStyleBackColor = false;
+			this->markEmployeeMarkLateButton->Click += gcnew System::EventHandler(this, &AttendanceV2::markEmployeeMarkLateButton_Click);
+			// 
+			// markEmployeeAttendanceLimit
+			// 
+			this->markEmployeeAttendanceLimit->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->markEmployeeAttendanceLimit->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, static_cast<System::Drawing::FontStyle>((System::Drawing::FontStyle::Bold | System::Drawing::FontStyle::Underline))));
+			this->markEmployeeAttendanceLimit->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->markEmployeeAttendanceLimit->Location = System::Drawing::Point(710, 297);
+			this->markEmployeeAttendanceLimit->Name = L"markEmployeeAttendanceLimit";
+			this->markEmployeeAttendanceLimit->Size = System::Drawing::Size(187, 60);
+			this->markEmployeeAttendanceLimit->TabIndex = 7;
+			this->markEmployeeAttendanceLimit->Text = L"0.00";
+			this->markEmployeeAttendanceLimit->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			// 
+			// markEmployeeText2
+			// 
+			this->markEmployeeText2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, static_cast<System::Drawing::FontStyle>((System::Drawing::FontStyle::Bold | System::Drawing::FontStyle::Underline))));
+			this->markEmployeeText2->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->markEmployeeText2->Location = System::Drawing::Point(52, 300);
+			this->markEmployeeText2->Name = L"markEmployeeText2";
+			this->markEmployeeText2->Size = System::Drawing::Size(646, 60);
+			this->markEmployeeText2->TabIndex = 5;
+			this->markEmployeeText2->Text = L"Employees Over Attendance Limit of:";
+			this->markEmployeeText2->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->markEmployeeText2->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
+			// 
+			// markEmployeeListView
+			// 
+			this->markEmployeeListView->BackColor = System::Drawing::Color::Moccasin;
+			this->markEmployeeListView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::ColumnHeader^  >(3) {
+				this->employeeName,
+					this->employeeID, this->attendanceCount
+			});
+			this->markEmployeeListView->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10, System::Drawing::FontStyle::Bold));
+			this->markEmployeeListView->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->markEmployeeListView->FullRowSelect = true;
+			this->markEmployeeListView->GridLines = true;
+			this->markEmployeeListView->HideSelection = false;
+			this->markEmployeeListView->Items->AddRange(gcnew cli::array< System::Windows::Forms::ListViewItem^  >(1) { listViewItem2 });
+			this->markEmployeeListView->Location = System::Drawing::Point(48, 363);
+			this->markEmployeeListView->MultiSelect = false;
+			this->markEmployeeListView->Name = L"markEmployeeListView";
+			this->markEmployeeListView->Size = System::Drawing::Size(851, 279);
+			this->markEmployeeListView->TabIndex = 4;
+			this->markEmployeeListView->UseCompatibleStateImageBehavior = false;
+			this->markEmployeeListView->View = System::Windows::Forms::View::Details;
+			this->markEmployeeListView->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
+			// 
+			// employeeName
+			// 
+			this->employeeName->Text = L"Employee Name";
+			this->employeeName->Width = 240;
+			// 
+			// employeeID
+			// 
+			this->employeeID->Text = L"ID";
+			this->employeeID->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
+			this->employeeID->Width = 100;
+			// 
+			// attendanceCount
+			// 
+			this->attendanceCount->Text = L"Points";
+			this->attendanceCount->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
+			this->attendanceCount->Width = 65;
+			// 
+			// markEmployeeText1
+			// 
+			this->markEmployeeText1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, static_cast<System::Drawing::FontStyle>((System::Drawing::FontStyle::Bold | System::Drawing::FontStyle::Underline))));
+			this->markEmployeeText1->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->markEmployeeText1->Location = System::Drawing::Point(104, 37);
+			this->markEmployeeText1->Name = L"markEmployeeText1";
+			this->markEmployeeText1->Size = System::Drawing::Size(724, 60);
+			this->markEmployeeText1->TabIndex = 1;
+			this->markEmployeeText1->Text = L"Choose an Employee to Mark:";
+			this->markEmployeeText1->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->markEmployeeText1->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
+			// 
+			// markEmployeeComboBox
+			// 
+			this->markEmployeeComboBox->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 13, System::Drawing::FontStyle::Bold));
+			this->markEmployeeComboBox->FormattingEnabled = true;
+			this->markEmployeeComboBox->Location = System::Drawing::Point(110, 106);
+			this->markEmployeeComboBox->Name = L"markEmployeeComboBox";
+			this->markEmployeeComboBox->Size = System::Drawing::Size(718, 48);
+			this->markEmployeeComboBox->TabIndex = 0;
+			this->markEmployeeComboBox->SelectedIndexChanged += gcnew System::EventHandler(this, &AttendanceV2::markEmployeeComboBox_SelectedIndexChanged);
+			this->markEmployeeComboBox->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
+			// 
+			// ignore_2
+			// 
+			this->ignore_2->BackColor = System::Drawing::Color::Moccasin;
+			this->ignore_2->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->ignore_2->Cursor = System::Windows::Forms::Cursors::Hand;
+			this->ignore_2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
+			this->ignore_2->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->ignore_2->Location = System::Drawing::Point(19, 903);
+			this->ignore_2->Name = L"ignore_2";
+			this->ignore_2->Size = System::Drawing::Size(63, 103);
+			this->ignore_2->TabIndex = 3;
+			this->ignore_2->Text = L"Mark Absent";
+			this->ignore_2->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->ignore_2->Click += gcnew System::EventHandler(this, &AttendanceV2::markEmployeeMarkAbsentButton_Click);
+			this->ignore_2->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
+			// 
+			// ignore_1
+			// 
+			this->ignore_1->BackColor = System::Drawing::Color::Moccasin;
+			this->ignore_1->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->ignore_1->Cursor = System::Windows::Forms::Cursors::Hand;
+			this->ignore_1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
+			this->ignore_1->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->ignore_1->Location = System::Drawing::Point(19, 809);
+			this->ignore_1->Name = L"ignore_1";
+			this->ignore_1->Size = System::Drawing::Size(65, 38);
+			this->ignore_1->TabIndex = 2;
+			this->ignore_1->Text = L"Mark Late";
+			this->ignore_1->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->ignore_1->Click += gcnew System::EventHandler(this, &AttendanceV2::markEmployeeMarkLateButton_Click);
+			this->ignore_1->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
 			// 
 			// editAddEmployeePanel
 			// 
@@ -520,10 +745,10 @@ private:
 			this->editAddEmployeePanel->Controls->Add(this->addEmployeeButton);
 			this->editAddEmployeePanel->Controls->Add(this->editEmployeeWorkPanel);
 			this->editAddEmployeePanel->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editAddEmployeePanel->Location = System::Drawing::Point(283, 633);
-			this->editAddEmployeePanel->Margin = System::Windows::Forms::Padding(2);
+			this->editAddEmployeePanel->Location = System::Drawing::Point(1162, 146);
+			this->editAddEmployeePanel->Margin = System::Windows::Forms::Padding(4);
 			this->editAddEmployeePanel->Name = L"editAddEmployeePanel";
-			this->editAddEmployeePanel->Size = System::Drawing::Size(496, 370);
+			this->editAddEmployeePanel->Size = System::Drawing::Size(992, 712);
 			this->editAddEmployeePanel->TabIndex = 8;
 			this->editAddEmployeePanel->Visible = false;
 			this->editAddEmployeePanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
@@ -535,10 +760,10 @@ private:
 			this->editEmployeeButton->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->editEmployeeButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editEmployeeButton->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editEmployeeButton->Location = System::Drawing::Point(250, 6);
-			this->editEmployeeButton->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editEmployeeButton->Location = System::Drawing::Point(500, 12);
+			this->editEmployeeButton->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editEmployeeButton->Name = L"editEmployeeButton";
-			this->editEmployeeButton->Size = System::Drawing::Size(236, 47);
+			this->editEmployeeButton->Size = System::Drawing::Size(472, 90);
 			this->editEmployeeButton->TabIndex = 1;
 			this->editEmployeeButton->Text = L"Edit Employee";
 			this->editEmployeeButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -548,6 +773,7 @@ private:
 			// addEmployeeWorkPanel
 			// 
 			this->addEmployeeWorkPanel->BackColor = System::Drawing::Color::Tan;
+			this->addEmployeeWorkPanel->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
 			this->addEmployeeWorkPanel->Controls->Add(this->addEmployeeWorkSaveButton);
 			this->addEmployeeWorkPanel->Controls->Add(this->addEmployeeWorkEmployeeID);
 			this->addEmployeeWorkPanel->Controls->Add(this->addEmployeeWorkLastName);
@@ -555,10 +781,10 @@ private:
 			this->addEmployeeWorkPanel->Controls->Add(this->addEmployeeWorkText3);
 			this->addEmployeeWorkPanel->Controls->Add(this->addEmployeeWorkText2);
 			this->addEmployeeWorkPanel->Controls->Add(this->addEmployeeWorkText1);
-			this->addEmployeeWorkPanel->Location = System::Drawing::Point(476, 55);
-			this->addEmployeeWorkPanel->Margin = System::Windows::Forms::Padding(2);
+			this->addEmployeeWorkPanel->Location = System::Drawing::Point(952, 106);
+			this->addEmployeeWorkPanel->Margin = System::Windows::Forms::Padding(4);
 			this->addEmployeeWorkPanel->Name = L"addEmployeeWorkPanel";
-			this->addEmployeeWorkPanel->Size = System::Drawing::Size(477, 302);
+			this->addEmployeeWorkPanel->Size = System::Drawing::Size(954, 581);
 			this->addEmployeeWorkPanel->TabIndex = 2;
 			this->addEmployeeWorkPanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
 			// 
@@ -566,10 +792,10 @@ private:
 			// 
 			this->addEmployeeWorkSaveButton->BackColor = System::Drawing::Color::Moccasin;
 			this->addEmployeeWorkSaveButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->addEmployeeWorkSaveButton->Location = System::Drawing::Point(34, 219);
-			this->addEmployeeWorkSaveButton->Margin = System::Windows::Forms::Padding(2);
+			this->addEmployeeWorkSaveButton->Location = System::Drawing::Point(68, 421);
+			this->addEmployeeWorkSaveButton->Margin = System::Windows::Forms::Padding(4);
 			this->addEmployeeWorkSaveButton->Name = L"addEmployeeWorkSaveButton";
-			this->addEmployeeWorkSaveButton->Size = System::Drawing::Size(410, 48);
+			this->addEmployeeWorkSaveButton->Size = System::Drawing::Size(820, 92);
 			this->addEmployeeWorkSaveButton->TabIndex = 7;
 			this->addEmployeeWorkSaveButton->Text = L"Save Employee";
 			this->addEmployeeWorkSaveButton->UseVisualStyleBackColor = false;
@@ -580,10 +806,10 @@ private:
 			this->addEmployeeWorkEmployeeID->BackColor = System::Drawing::Color::Moccasin;
 			this->addEmployeeWorkEmployeeID->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 14, System::Drawing::FontStyle::Bold));
 			this->addEmployeeWorkEmployeeID->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->addEmployeeWorkEmployeeID->Location = System::Drawing::Point(196, 151);
-			this->addEmployeeWorkEmployeeID->Margin = System::Windows::Forms::Padding(2);
+			this->addEmployeeWorkEmployeeID->Location = System::Drawing::Point(392, 290);
+			this->addEmployeeWorkEmployeeID->Margin = System::Windows::Forms::Padding(4);
 			this->addEmployeeWorkEmployeeID->Name = L"addEmployeeWorkEmployeeID";
-			this->addEmployeeWorkEmployeeID->Size = System::Drawing::Size(247, 29);
+			this->addEmployeeWorkEmployeeID->Size = System::Drawing::Size(490, 51);
 			this->addEmployeeWorkEmployeeID->TabIndex = 6;
 			this->addEmployeeWorkEmployeeID->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -592,10 +818,10 @@ private:
 			this->addEmployeeWorkLastName->BackColor = System::Drawing::Color::Moccasin;
 			this->addEmployeeWorkLastName->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 14, System::Drawing::FontStyle::Bold));
 			this->addEmployeeWorkLastName->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->addEmployeeWorkLastName->Location = System::Drawing::Point(196, 99);
-			this->addEmployeeWorkLastName->Margin = System::Windows::Forms::Padding(2);
+			this->addEmployeeWorkLastName->Location = System::Drawing::Point(392, 190);
+			this->addEmployeeWorkLastName->Margin = System::Windows::Forms::Padding(4);
 			this->addEmployeeWorkLastName->Name = L"addEmployeeWorkLastName";
-			this->addEmployeeWorkLastName->Size = System::Drawing::Size(247, 29);
+			this->addEmployeeWorkLastName->Size = System::Drawing::Size(490, 51);
 			this->addEmployeeWorkLastName->TabIndex = 5;
 			this->addEmployeeWorkLastName->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -604,10 +830,10 @@ private:
 			this->addEmployeeWorkFirstName->BackColor = System::Drawing::Color::Moccasin;
 			this->addEmployeeWorkFirstName->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 14, System::Drawing::FontStyle::Bold));
 			this->addEmployeeWorkFirstName->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->addEmployeeWorkFirstName->Location = System::Drawing::Point(196, 44);
-			this->addEmployeeWorkFirstName->Margin = System::Windows::Forms::Padding(2);
+			this->addEmployeeWorkFirstName->Location = System::Drawing::Point(392, 85);
+			this->addEmployeeWorkFirstName->Margin = System::Windows::Forms::Padding(4);
 			this->addEmployeeWorkFirstName->Name = L"addEmployeeWorkFirstName";
-			this->addEmployeeWorkFirstName->Size = System::Drawing::Size(247, 29);
+			this->addEmployeeWorkFirstName->Size = System::Drawing::Size(490, 51);
 			this->addEmployeeWorkFirstName->TabIndex = 4;
 			this->addEmployeeWorkFirstName->Text = L"testing";
 			this->addEmployeeWorkFirstName->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
@@ -615,10 +841,10 @@ private:
 			// addEmployeeWorkText3
 			// 
 			this->addEmployeeWorkText3->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->addEmployeeWorkText3->Location = System::Drawing::Point(36, 151);
-			this->addEmployeeWorkText3->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->addEmployeeWorkText3->Location = System::Drawing::Point(72, 290);
+			this->addEmployeeWorkText3->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->addEmployeeWorkText3->Name = L"addEmployeeWorkText3";
-			this->addEmployeeWorkText3->Size = System::Drawing::Size(120, 27);
+			this->addEmployeeWorkText3->Size = System::Drawing::Size(240, 52);
 			this->addEmployeeWorkText3->TabIndex = 2;
 			this->addEmployeeWorkText3->Text = L"Employee ID:";
 			this->addEmployeeWorkText3->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -626,10 +852,10 @@ private:
 			// addEmployeeWorkText2
 			// 
 			this->addEmployeeWorkText2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->addEmployeeWorkText2->Location = System::Drawing::Point(44, 99);
-			this->addEmployeeWorkText2->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->addEmployeeWorkText2->Location = System::Drawing::Point(88, 190);
+			this->addEmployeeWorkText2->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->addEmployeeWorkText2->Name = L"addEmployeeWorkText2";
-			this->addEmployeeWorkText2->Size = System::Drawing::Size(113, 27);
+			this->addEmployeeWorkText2->Size = System::Drawing::Size(226, 52);
 			this->addEmployeeWorkText2->TabIndex = 1;
 			this->addEmployeeWorkText2->Text = L"Last Name:";
 			this->addEmployeeWorkText2->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -637,10 +863,10 @@ private:
 			// addEmployeeWorkText1
 			// 
 			this->addEmployeeWorkText1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->addEmployeeWorkText1->Location = System::Drawing::Point(44, 44);
-			this->addEmployeeWorkText1->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->addEmployeeWorkText1->Location = System::Drawing::Point(88, 85);
+			this->addEmployeeWorkText1->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->addEmployeeWorkText1->Name = L"addEmployeeWorkText1";
-			this->addEmployeeWorkText1->Size = System::Drawing::Size(113, 27);
+			this->addEmployeeWorkText1->Size = System::Drawing::Size(226, 52);
 			this->addEmployeeWorkText1->TabIndex = 0;
 			this->addEmployeeWorkText1->Text = L"First Name:";
 			this->addEmployeeWorkText1->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -652,10 +878,10 @@ private:
 			this->addEmployeeButton->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->addEmployeeButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->addEmployeeButton->ForeColor = System::Drawing::Color::White;
-			this->addEmployeeButton->Location = System::Drawing::Point(9, 6);
-			this->addEmployeeButton->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->addEmployeeButton->Location = System::Drawing::Point(18, 12);
+			this->addEmployeeButton->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->addEmployeeButton->Name = L"addEmployeeButton";
-			this->addEmployeeButton->Size = System::Drawing::Size(236, 47);
+			this->addEmployeeButton->Size = System::Drawing::Size(472, 90);
 			this->addEmployeeButton->TabIndex = 0;
 			this->addEmployeeButton->Text = L"Add Employee";
 			this->addEmployeeButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -665,6 +891,7 @@ private:
 			// editEmployeeWorkPanel
 			// 
 			this->editEmployeeWorkPanel->BackColor = System::Drawing::Color::Tan;
+			this->editEmployeeWorkPanel->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
 			this->editEmployeeWorkPanel->Controls->Add(this->editEmployeeRemoveConfirmPanel);
 			this->editEmployeeWorkPanel->Controls->Add(this->editEmployeeWorkCurrentPoints);
 			this->editEmployeeWorkPanel->Controls->Add(this->editEmployeeWorkEmployeeID);
@@ -678,10 +905,10 @@ private:
 			this->editEmployeeWorkPanel->Controls->Add(this->editEmployeeWorkText2);
 			this->editEmployeeWorkPanel->Controls->Add(this->editEmployeeComboBox);
 			this->editEmployeeWorkPanel->Controls->Add(this->editEmployeeWorkText1);
-			this->editEmployeeWorkPanel->Location = System::Drawing::Point(422, 267);
-			this->editEmployeeWorkPanel->Margin = System::Windows::Forms::Padding(2);
+			this->editEmployeeWorkPanel->Location = System::Drawing::Point(844, 513);
+			this->editEmployeeWorkPanel->Margin = System::Windows::Forms::Padding(4);
 			this->editEmployeeWorkPanel->Name = L"editEmployeeWorkPanel";
-			this->editEmployeeWorkPanel->Size = System::Drawing::Size(477, 302);
+			this->editEmployeeWorkPanel->Size = System::Drawing::Size(954, 581);
 			this->editEmployeeWorkPanel->TabIndex = 3;
 			this->editEmployeeWorkPanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
 			// 
@@ -690,9 +917,10 @@ private:
 			this->editEmployeeRemoveConfirmPanel->BackColor = System::Drawing::Color::Maroon;
 			this->editEmployeeRemoveConfirmPanel->Controls->Add(this->editEmployeeRemoveCancelButton);
 			this->editEmployeeRemoveConfirmPanel->Controls->Add(this->editEmployeeRemoveConfirmButton);
-			this->editEmployeeRemoveConfirmPanel->Location = System::Drawing::Point(14, 226);
+			this->editEmployeeRemoveConfirmPanel->Location = System::Drawing::Point(28, 435);
+			this->editEmployeeRemoveConfirmPanel->Margin = System::Windows::Forms::Padding(6);
 			this->editEmployeeRemoveConfirmPanel->Name = L"editEmployeeRemoveConfirmPanel";
-			this->editEmployeeRemoveConfirmPanel->Size = System::Drawing::Size(448, 64);
+			this->editEmployeeRemoveConfirmPanel->Size = System::Drawing::Size(896, 123);
 			this->editEmployeeRemoveConfirmPanel->TabIndex = 9;
 			// 
 			// editEmployeeRemoveCancelButton
@@ -701,9 +929,10 @@ private:
 			this->editEmployeeRemoveCancelButton->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->editEmployeeRemoveCancelButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editEmployeeRemoveCancelButton->ForeColor = System::Drawing::Color::White;
-			this->editEmployeeRemoveCancelButton->Location = System::Drawing::Point(4, 3);
+			this->editEmployeeRemoveCancelButton->Location = System::Drawing::Point(8, 6);
+			this->editEmployeeRemoveCancelButton->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->editEmployeeRemoveCancelButton->Name = L"editEmployeeRemoveCancelButton";
-			this->editEmployeeRemoveCancelButton->Size = System::Drawing::Size(218, 57);
+			this->editEmployeeRemoveCancelButton->Size = System::Drawing::Size(436, 110);
 			this->editEmployeeRemoveCancelButton->TabIndex = 1;
 			this->editEmployeeRemoveCancelButton->Text = L"Cancel";
 			this->editEmployeeRemoveCancelButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -715,9 +944,10 @@ private:
 			this->editEmployeeRemoveConfirmButton->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->editEmployeeRemoveConfirmButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editEmployeeRemoveConfirmButton->ForeColor = System::Drawing::Color::White;
-			this->editEmployeeRemoveConfirmButton->Location = System::Drawing::Point(227, 3);
+			this->editEmployeeRemoveConfirmButton->Location = System::Drawing::Point(454, 6);
+			this->editEmployeeRemoveConfirmButton->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->editEmployeeRemoveConfirmButton->Name = L"editEmployeeRemoveConfirmButton";
-			this->editEmployeeRemoveConfirmButton->Size = System::Drawing::Size(218, 57);
+			this->editEmployeeRemoveConfirmButton->Size = System::Drawing::Size(436, 110);
 			this->editEmployeeRemoveConfirmButton->TabIndex = 0;
 			this->editEmployeeRemoveConfirmButton->Text = L"Remove Employee";
 			this->editEmployeeRemoveConfirmButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -728,10 +958,10 @@ private:
 			this->editEmployeeWorkCurrentPoints->BackColor = System::Drawing::Color::Moccasin;
 			this->editEmployeeWorkCurrentPoints->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editEmployeeWorkCurrentPoints->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editEmployeeWorkCurrentPoints->Location = System::Drawing::Point(212, 186);
-			this->editEmployeeWorkCurrentPoints->Margin = System::Windows::Forms::Padding(2);
+			this->editEmployeeWorkCurrentPoints->Location = System::Drawing::Point(424, 358);
+			this->editEmployeeWorkCurrentPoints->Margin = System::Windows::Forms::Padding(4);
 			this->editEmployeeWorkCurrentPoints->Name = L"editEmployeeWorkCurrentPoints";
-			this->editEmployeeWorkCurrentPoints->Size = System::Drawing::Size(231, 26);
+			this->editEmployeeWorkCurrentPoints->Size = System::Drawing::Size(458, 45);
 			this->editEmployeeWorkCurrentPoints->TabIndex = 6;
 			this->editEmployeeWorkCurrentPoints->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -740,10 +970,10 @@ private:
 			this->editEmployeeWorkEmployeeID->BackColor = System::Drawing::Color::Moccasin;
 			this->editEmployeeWorkEmployeeID->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editEmployeeWorkEmployeeID->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editEmployeeWorkEmployeeID->Location = System::Drawing::Point(212, 148);
-			this->editEmployeeWorkEmployeeID->Margin = System::Windows::Forms::Padding(2);
+			this->editEmployeeWorkEmployeeID->Location = System::Drawing::Point(424, 285);
+			this->editEmployeeWorkEmployeeID->Margin = System::Windows::Forms::Padding(4);
 			this->editEmployeeWorkEmployeeID->Name = L"editEmployeeWorkEmployeeID";
-			this->editEmployeeWorkEmployeeID->Size = System::Drawing::Size(231, 26);
+			this->editEmployeeWorkEmployeeID->Size = System::Drawing::Size(458, 45);
 			this->editEmployeeWorkEmployeeID->TabIndex = 5;
 			this->editEmployeeWorkEmployeeID->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -752,10 +982,10 @@ private:
 			this->editEmployeeWorkLastName->BackColor = System::Drawing::Color::Moccasin;
 			this->editEmployeeWorkLastName->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editEmployeeWorkLastName->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editEmployeeWorkLastName->Location = System::Drawing::Point(212, 111);
-			this->editEmployeeWorkLastName->Margin = System::Windows::Forms::Padding(2);
+			this->editEmployeeWorkLastName->Location = System::Drawing::Point(424, 213);
+			this->editEmployeeWorkLastName->Margin = System::Windows::Forms::Padding(4);
 			this->editEmployeeWorkLastName->Name = L"editEmployeeWorkLastName";
-			this->editEmployeeWorkLastName->Size = System::Drawing::Size(231, 26);
+			this->editEmployeeWorkLastName->Size = System::Drawing::Size(458, 45);
 			this->editEmployeeWorkLastName->TabIndex = 4;
 			this->editEmployeeWorkLastName->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -764,20 +994,20 @@ private:
 			this->editEmployeeWorkFirstName->BackColor = System::Drawing::Color::Moccasin;
 			this->editEmployeeWorkFirstName->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editEmployeeWorkFirstName->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editEmployeeWorkFirstName->Location = System::Drawing::Point(212, 75);
-			this->editEmployeeWorkFirstName->Margin = System::Windows::Forms::Padding(2);
+			this->editEmployeeWorkFirstName->Location = System::Drawing::Point(424, 144);
+			this->editEmployeeWorkFirstName->Margin = System::Windows::Forms::Padding(4);
 			this->editEmployeeWorkFirstName->Name = L"editEmployeeWorkFirstName";
-			this->editEmployeeWorkFirstName->Size = System::Drawing::Size(231, 26);
+			this->editEmployeeWorkFirstName->Size = System::Drawing::Size(458, 45);
 			this->editEmployeeWorkFirstName->TabIndex = 3;
 			this->editEmployeeWorkFirstName->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
 			// editEmployeeWorkText5
 			// 
 			this->editEmployeeWorkText5->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editEmployeeWorkText5->Location = System::Drawing::Point(29, 185);
-			this->editEmployeeWorkText5->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editEmployeeWorkText5->Location = System::Drawing::Point(58, 356);
+			this->editEmployeeWorkText5->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editEmployeeWorkText5->Name = L"editEmployeeWorkText5";
-			this->editEmployeeWorkText5->Size = System::Drawing::Size(135, 24);
+			this->editEmployeeWorkText5->Size = System::Drawing::Size(270, 46);
 			this->editEmployeeWorkText5->TabIndex = 8;
 			this->editEmployeeWorkText5->Text = L"Current Points:";
 			this->editEmployeeWorkText5->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -787,10 +1017,10 @@ private:
 			this->editEmployeeWorkRemoveEmployee->BackColor = System::Drawing::Color::Red;
 			this->editEmployeeWorkRemoveEmployee->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 9, System::Drawing::FontStyle::Bold));
 			this->editEmployeeWorkRemoveEmployee->ForeColor = System::Drawing::Color::White;
-			this->editEmployeeWorkRemoveEmployee->Location = System::Drawing::Point(32, 226);
-			this->editEmployeeWorkRemoveEmployee->Margin = System::Windows::Forms::Padding(2);
+			this->editEmployeeWorkRemoveEmployee->Location = System::Drawing::Point(64, 435);
+			this->editEmployeeWorkRemoveEmployee->Margin = System::Windows::Forms::Padding(4);
 			this->editEmployeeWorkRemoveEmployee->Name = L"editEmployeeWorkRemoveEmployee";
-			this->editEmployeeWorkRemoveEmployee->Size = System::Drawing::Size(124, 42);
+			this->editEmployeeWorkRemoveEmployee->Size = System::Drawing::Size(248, 81);
 			this->editEmployeeWorkRemoveEmployee->TabIndex = 8;
 			this->editEmployeeWorkRemoveEmployee->Text = L"Remove Employee";
 			this->editEmployeeWorkRemoveEmployee->UseVisualStyleBackColor = false;
@@ -800,10 +1030,10 @@ private:
 			// 
 			this->editEmployeeWorkSaveButton->BackColor = System::Drawing::Color::Moccasin;
 			this->editEmployeeWorkSaveButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editEmployeeWorkSaveButton->Location = System::Drawing::Point(162, 226);
-			this->editEmployeeWorkSaveButton->Margin = System::Windows::Forms::Padding(2);
+			this->editEmployeeWorkSaveButton->Location = System::Drawing::Point(324, 435);
+			this->editEmployeeWorkSaveButton->Margin = System::Windows::Forms::Padding(4);
 			this->editEmployeeWorkSaveButton->Name = L"editEmployeeWorkSaveButton";
-			this->editEmployeeWorkSaveButton->Size = System::Drawing::Size(300, 42);
+			this->editEmployeeWorkSaveButton->Size = System::Drawing::Size(600, 81);
 			this->editEmployeeWorkSaveButton->TabIndex = 7;
 			this->editEmployeeWorkSaveButton->Text = L"Save Employee";
 			this->editEmployeeWorkSaveButton->UseVisualStyleBackColor = false;
@@ -812,10 +1042,10 @@ private:
 			// editEmployeeWorkText4
 			// 
 			this->editEmployeeWorkText4->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editEmployeeWorkText4->Location = System::Drawing::Point(36, 147);
-			this->editEmployeeWorkText4->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editEmployeeWorkText4->Location = System::Drawing::Point(72, 283);
+			this->editEmployeeWorkText4->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editEmployeeWorkText4->Name = L"editEmployeeWorkText4";
-			this->editEmployeeWorkText4->Size = System::Drawing::Size(128, 24);
+			this->editEmployeeWorkText4->Size = System::Drawing::Size(256, 46);
 			this->editEmployeeWorkText4->TabIndex = 5;
 			this->editEmployeeWorkText4->Text = L"Employee ID:";
 			this->editEmployeeWorkText4->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -823,10 +1053,10 @@ private:
 			// editEmployeeWorkText3
 			// 
 			this->editEmployeeWorkText3->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editEmployeeWorkText3->Location = System::Drawing::Point(50, 110);
-			this->editEmployeeWorkText3->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editEmployeeWorkText3->Location = System::Drawing::Point(100, 212);
+			this->editEmployeeWorkText3->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editEmployeeWorkText3->Name = L"editEmployeeWorkText3";
-			this->editEmployeeWorkText3->Size = System::Drawing::Size(114, 24);
+			this->editEmployeeWorkText3->Size = System::Drawing::Size(228, 46);
 			this->editEmployeeWorkText3->TabIndex = 4;
 			this->editEmployeeWorkText3->Text = L"Last Name:";
 			this->editEmployeeWorkText3->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -834,10 +1064,10 @@ private:
 			// editEmployeeWorkText2
 			// 
 			this->editEmployeeWorkText2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editEmployeeWorkText2->Location = System::Drawing::Point(50, 74);
-			this->editEmployeeWorkText2->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editEmployeeWorkText2->Location = System::Drawing::Point(100, 142);
+			this->editEmployeeWorkText2->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editEmployeeWorkText2->Name = L"editEmployeeWorkText2";
-			this->editEmployeeWorkText2->Size = System::Drawing::Size(114, 24);
+			this->editEmployeeWorkText2->Size = System::Drawing::Size(228, 46);
 			this->editEmployeeWorkText2->TabIndex = 3;
 			this->editEmployeeWorkText2->Text = L"First Name:";
 			this->editEmployeeWorkText2->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -852,10 +1082,10 @@ private:
 			this->editEmployeeComboBox->FormattingEnabled = true;
 			this->editEmployeeComboBox->IntegralHeight = false;
 			this->editEmployeeComboBox->Items->AddRange(gcnew cli::array< System::Object^  >(2) { L"test", L"testing" });
-			this->editEmployeeComboBox->Location = System::Drawing::Point(42, 33);
-			this->editEmployeeComboBox->Margin = System::Windows::Forms::Padding(2);
+			this->editEmployeeComboBox->Location = System::Drawing::Point(84, 63);
+			this->editEmployeeComboBox->Margin = System::Windows::Forms::Padding(4);
 			this->editEmployeeComboBox->Name = L"editEmployeeComboBox";
-			this->editEmployeeComboBox->Size = System::Drawing::Size(402, 27);
+			this->editEmployeeComboBox->Size = System::Drawing::Size(800, 48);
 			this->editEmployeeComboBox->Sorted = true;
 			this->editEmployeeComboBox->TabIndex = 2;
 			this->editEmployeeComboBox->SelectedIndexChanged += gcnew System::EventHandler(this, &AttendanceV2::comboBox1_SelectedIndexChanged);
@@ -863,24 +1093,181 @@ private:
 			// editEmployeeWorkText1
 			// 
 			this->editEmployeeWorkText1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editEmployeeWorkText1->Location = System::Drawing::Point(148, 0);
-			this->editEmployeeWorkText1->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editEmployeeWorkText1->Location = System::Drawing::Point(296, 0);
+			this->editEmployeeWorkText1->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editEmployeeWorkText1->Name = L"editEmployeeWorkText1";
-			this->editEmployeeWorkText1->Size = System::Drawing::Size(188, 31);
+			this->editEmployeeWorkText1->Size = System::Drawing::Size(376, 60);
 			this->editEmployeeWorkText1->TabIndex = 1;
 			this->editEmployeeWorkText1->Text = L"Choose an Employee:";
 			this->editEmployeeWorkText1->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
 			// 
 			// settingsPanel
 			// 
-			this->settingsPanel->BackColor = System::Drawing::Color::CornflowerBlue;
-			this->settingsPanel->Location = System::Drawing::Point(616, 281);
-			this->settingsPanel->Margin = System::Windows::Forms::Padding(2);
+			this->settingsPanel->BackColor = System::Drawing::Color::Sienna;
+			this->settingsPanel->Controls->Add(this->panel3);
+			this->settingsPanel->Controls->Add(this->panel2);
+			this->settingsPanel->Controls->Add(this->panel1);
+			this->settingsPanel->Location = System::Drawing::Point(827, 853);
+			this->settingsPanel->Margin = System::Windows::Forms::Padding(4);
 			this->settingsPanel->Name = L"settingsPanel";
-			this->settingsPanel->Size = System::Drawing::Size(496, 370);
+			this->settingsPanel->Size = System::Drawing::Size(992, 712);
 			this->settingsPanel->TabIndex = 10;
 			this->settingsPanel->Visible = false;
 			this->settingsPanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
+			// 
+			// panel3
+			// 
+			this->panel3->BackColor = System::Drawing::Color::Tan;
+			this->panel3->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->panel3->Controls->Add(this->richTextBox1);
+			this->panel3->Controls->Add(this->label6);
+			this->panel3->Location = System::Drawing::Point(27, 429);
+			this->panel3->Name = L"panel3";
+			this->panel3->Size = System::Drawing::Size(933, 263);
+			this->panel3->TabIndex = 2;
+			// 
+			// richTextBox1
+			// 
+			this->richTextBox1->Location = System::Drawing::Point(11, 48);
+			this->richTextBox1->Name = L"richTextBox1";
+			this->richTextBox1->ReadOnly = true;
+			this->richTextBox1->Size = System::Drawing::Size(904, 200);
+			this->richTextBox1->TabIndex = 5;
+			this->richTextBox1->Text = L"";
+			// 
+			// label6
+			// 
+			this->label6->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, static_cast<System::Drawing::FontStyle>((System::Drawing::FontStyle::Bold | System::Drawing::FontStyle::Underline))));
+			this->label6->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->label6->Location = System::Drawing::Point(-2, 0);
+			this->label6->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label6->Name = L"label6";
+			this->label6->Size = System::Drawing::Size(930, 46);
+			this->label6->TabIndex = 4;
+			this->label6->Text = L"Logs:";
+			this->label6->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			// 
+			// panel2
+			// 
+			this->panel2->BackColor = System::Drawing::Color::Tan;
+			this->panel2->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->panel2->Controls->Add(this->label5);
+			this->panel2->Location = System::Drawing::Point(512, 22);
+			this->panel2->Name = L"panel2";
+			this->panel2->Size = System::Drawing::Size(448, 381);
+			this->panel2->TabIndex = 1;
+			// 
+			// label5
+			// 
+			this->label5->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, static_cast<System::Drawing::FontStyle>((System::Drawing::FontStyle::Bold | System::Drawing::FontStyle::Underline))));
+			this->label5->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->label5->Location = System::Drawing::Point(1, 3);
+			this->label5->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label5->Name = L"label5";
+			this->label5->Size = System::Drawing::Size(442, 92);
+			this->label5->TabIndex = 3;
+			this->label5->Text = L"Theme:";
+			this->label5->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			// 
+			// panel1
+			// 
+			this->panel1->BackColor = System::Drawing::Color::Tan;
+			this->panel1->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->panel1->Controls->Add(this->button1);
+			this->panel1->Controls->Add(this->label4);
+			this->panel1->Controls->Add(this->textBox3);
+			this->panel1->Controls->Add(this->label3);
+			this->panel1->Controls->Add(this->textBox2);
+			this->panel1->Controls->Add(this->label2);
+			this->panel1->Controls->Add(this->textBox1);
+			this->panel1->Controls->Add(this->label1);
+			this->panel1->Location = System::Drawing::Point(27, 20);
+			this->panel1->Name = L"panel1";
+			this->panel1->Size = System::Drawing::Size(448, 383);
+			this->panel1->TabIndex = 0;
+			// 
+			// button1
+			// 
+			this->button1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 9, System::Drawing::FontStyle::Bold));
+			this->button1->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->button1->Location = System::Drawing::Point(13, 290);
+			this->button1->Name = L"button1";
+			this->button1->Size = System::Drawing::Size(411, 76);
+			this->button1->TabIndex = 9;
+			this->button1->Text = L"Save Attendance Points Setings";
+			this->button1->UseVisualStyleBackColor = true;
+			// 
+			// label4
+			// 
+			this->label4->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10, System::Drawing::FontStyle::Bold));
+			this->label4->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->label4->Location = System::Drawing::Point(7, 219);
+			this->label4->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label4->Name = L"label4";
+			this->label4->Size = System::Drawing::Size(262, 76);
+			this->label4->TabIndex = 8;
+			this->label4->Text = L"Absent Points:";
+			this->label4->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
+			// 
+			// textBox3
+			// 
+			this->textBox3->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10, System::Drawing::FontStyle::Bold));
+			this->textBox3->Location = System::Drawing::Point(284, 239);
+			this->textBox3->Name = L"textBox3";
+			this->textBox3->Size = System::Drawing::Size(136, 39);
+			this->textBox3->TabIndex = 7;
+			// 
+			// label3
+			// 
+			this->label3->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10, System::Drawing::FontStyle::Bold));
+			this->label3->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->label3->Location = System::Drawing::Point(7, 164);
+			this->label3->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label3->Name = L"label3";
+			this->label3->Size = System::Drawing::Size(262, 76);
+			this->label3->TabIndex = 6;
+			this->label3->Text = L"Late Points:";
+			this->label3->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
+			// 
+			// textBox2
+			// 
+			this->textBox2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10, System::Drawing::FontStyle::Bold));
+			this->textBox2->Location = System::Drawing::Point(284, 184);
+			this->textBox2->Name = L"textBox2";
+			this->textBox2->Size = System::Drawing::Size(136, 39);
+			this->textBox2->TabIndex = 5;
+			// 
+			// label2
+			// 
+			this->label2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10, System::Drawing::FontStyle::Bold));
+			this->label2->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->label2->Location = System::Drawing::Point(-25, 104);
+			this->label2->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label2->Name = L"label2";
+			this->label2->Size = System::Drawing::Size(294, 88);
+			this->label2->TabIndex = 4;
+			this->label2->Text = L"Attendance Limit:";
+			this->label2->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
+			// 
+			// textBox1
+			// 
+			this->textBox1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 10, System::Drawing::FontStyle::Bold));
+			this->textBox1->Location = System::Drawing::Point(284, 129);
+			this->textBox1->Name = L"textBox1";
+			this->textBox1->Size = System::Drawing::Size(136, 39);
+			this->textBox1->TabIndex = 3;
+			// 
+			// label1
+			// 
+			this->label1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, static_cast<System::Drawing::FontStyle>((System::Drawing::FontStyle::Bold | System::Drawing::FontStyle::Underline))));
+			this->label1->ForeColor = System::Drawing::Color::DarkSlateGray;
+			this->label1->Location = System::Drawing::Point(0, 2);
+			this->label1->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
+			this->label1->Name = L"label1";
+			this->label1->Size = System::Drawing::Size(442, 95);
+			this->label1->TabIndex = 2;
+			this->label1->Text = L"Attendance Points Settings";
+			this->label1->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			// 
 			// adminPanel
 			// 
@@ -890,10 +1277,10 @@ private:
 			this->adminPanel->Controls->Add(this->addAdminButton);
 			this->adminPanel->Controls->Add(this->editAdminWorkPanel);
 			this->adminPanel->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->adminPanel->Location = System::Drawing::Point(477, 240);
-			this->adminPanel->Margin = System::Windows::Forms::Padding(2);
+			this->adminPanel->Location = System::Drawing::Point(180, 146);
+			this->adminPanel->Margin = System::Windows::Forms::Padding(4);
 			this->adminPanel->Name = L"adminPanel";
-			this->adminPanel->Size = System::Drawing::Size(496, 370);
+			this->adminPanel->Size = System::Drawing::Size(992, 712);
 			this->adminPanel->TabIndex = 11;
 			this->adminPanel->Visible = false;
 			this->adminPanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
@@ -905,10 +1292,10 @@ private:
 			this->editAdminButton->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->editAdminButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editAdminButton->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editAdminButton->Location = System::Drawing::Point(250, 6);
-			this->editAdminButton->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editAdminButton->Location = System::Drawing::Point(500, 12);
+			this->editAdminButton->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editAdminButton->Name = L"editAdminButton";
-			this->editAdminButton->Size = System::Drawing::Size(236, 47);
+			this->editAdminButton->Size = System::Drawing::Size(472, 90);
 			this->editAdminButton->TabIndex = 1;
 			this->editAdminButton->Text = L"Edit Admin";
 			this->editAdminButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -918,6 +1305,7 @@ private:
 			// addAdminWorkPanel
 			// 
 			this->addAdminWorkPanel->BackColor = System::Drawing::Color::Tan;
+			this->addAdminWorkPanel->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
 			this->addAdminWorkPanel->Controls->Add(this->addAdminWorkConfirmedPassword);
 			this->addAdminWorkPanel->Controls->Add(this->addAdminWorkText3);
 			this->addAdminWorkPanel->Controls->Add(this->addAdminSaveButton);
@@ -925,10 +1313,10 @@ private:
 			this->addAdminWorkPanel->Controls->Add(this->addAdminWorkUsername);
 			this->addAdminWorkPanel->Controls->Add(this->addAdminWorkText2);
 			this->addAdminWorkPanel->Controls->Add(this->addAdminWorkText1);
-			this->addAdminWorkPanel->Location = System::Drawing::Point(446, 327);
-			this->addAdminWorkPanel->Margin = System::Windows::Forms::Padding(2);
+			this->addAdminWorkPanel->Location = System::Drawing::Point(801, 695);
+			this->addAdminWorkPanel->Margin = System::Windows::Forms::Padding(4);
 			this->addAdminWorkPanel->Name = L"addAdminWorkPanel";
-			this->addAdminWorkPanel->Size = System::Drawing::Size(477, 302);
+			this->addAdminWorkPanel->Size = System::Drawing::Size(954, 581);
 			this->addAdminWorkPanel->TabIndex = 2;
 			this->addAdminWorkPanel->MouseEnter += gcnew System::EventHandler(this, &AttendanceV2::closeMenu);
 			// 
@@ -937,20 +1325,20 @@ private:
 			this->addAdminWorkConfirmedPassword->BackColor = System::Drawing::Color::Moccasin;
 			this->addAdminWorkConfirmedPassword->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 14, System::Drawing::FontStyle::Bold));
 			this->addAdminWorkConfirmedPassword->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->addAdminWorkConfirmedPassword->Location = System::Drawing::Point(196, 150);
-			this->addAdminWorkConfirmedPassword->Margin = System::Windows::Forms::Padding(2);
+			this->addAdminWorkConfirmedPassword->Location = System::Drawing::Point(392, 288);
+			this->addAdminWorkConfirmedPassword->Margin = System::Windows::Forms::Padding(4);
 			this->addAdminWorkConfirmedPassword->Name = L"addAdminWorkConfirmedPassword";
-			this->addAdminWorkConfirmedPassword->Size = System::Drawing::Size(247, 29);
+			this->addAdminWorkConfirmedPassword->Size = System::Drawing::Size(490, 51);
 			this->addAdminWorkConfirmedPassword->TabIndex = 6;
 			this->addAdminWorkConfirmedPassword->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
 			// addAdminWorkText3
 			// 
 			this->addAdminWorkText3->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->addAdminWorkText3->Location = System::Drawing::Point(2, 152);
-			this->addAdminWorkText3->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->addAdminWorkText3->Location = System::Drawing::Point(4, 292);
+			this->addAdminWorkText3->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->addAdminWorkText3->Name = L"addAdminWorkText3";
-			this->addAdminWorkText3->Size = System::Drawing::Size(178, 27);
+			this->addAdminWorkText3->Size = System::Drawing::Size(356, 52);
 			this->addAdminWorkText3->TabIndex = 8;
 			this->addAdminWorkText3->Text = L"Confrim Password:";
 			this->addAdminWorkText3->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -959,10 +1347,10 @@ private:
 			// 
 			this->addAdminSaveButton->BackColor = System::Drawing::Color::Moccasin;
 			this->addAdminSaveButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->addAdminSaveButton->Location = System::Drawing::Point(33, 216);
-			this->addAdminSaveButton->Margin = System::Windows::Forms::Padding(2);
+			this->addAdminSaveButton->Location = System::Drawing::Point(66, 415);
+			this->addAdminSaveButton->Margin = System::Windows::Forms::Padding(4);
 			this->addAdminSaveButton->Name = L"addAdminSaveButton";
-			this->addAdminSaveButton->Size = System::Drawing::Size(410, 48);
+			this->addAdminSaveButton->Size = System::Drawing::Size(820, 92);
 			this->addAdminSaveButton->TabIndex = 7;
 			this->addAdminSaveButton->Text = L"Save Admin";
 			this->addAdminSaveButton->UseVisualStyleBackColor = false;
@@ -973,10 +1361,10 @@ private:
 			this->addAdminWorkPassword->BackColor = System::Drawing::Color::Moccasin;
 			this->addAdminWorkPassword->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 14, System::Drawing::FontStyle::Bold));
 			this->addAdminWorkPassword->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->addAdminWorkPassword->Location = System::Drawing::Point(196, 100);
-			this->addAdminWorkPassword->Margin = System::Windows::Forms::Padding(2);
+			this->addAdminWorkPassword->Location = System::Drawing::Point(392, 192);
+			this->addAdminWorkPassword->Margin = System::Windows::Forms::Padding(4);
 			this->addAdminWorkPassword->Name = L"addAdminWorkPassword";
-			this->addAdminWorkPassword->Size = System::Drawing::Size(247, 29);
+			this->addAdminWorkPassword->Size = System::Drawing::Size(490, 51);
 			this->addAdminWorkPassword->TabIndex = 5;
 			this->addAdminWorkPassword->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -985,10 +1373,10 @@ private:
 			this->addAdminWorkUsername->BackColor = System::Drawing::Color::Moccasin;
 			this->addAdminWorkUsername->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 14, System::Drawing::FontStyle::Bold));
 			this->addAdminWorkUsername->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->addAdminWorkUsername->Location = System::Drawing::Point(196, 49);
-			this->addAdminWorkUsername->Margin = System::Windows::Forms::Padding(2);
+			this->addAdminWorkUsername->Location = System::Drawing::Point(392, 94);
+			this->addAdminWorkUsername->Margin = System::Windows::Forms::Padding(4);
 			this->addAdminWorkUsername->Name = L"addAdminWorkUsername";
-			this->addAdminWorkUsername->Size = System::Drawing::Size(247, 29);
+			this->addAdminWorkUsername->Size = System::Drawing::Size(490, 51);
 			this->addAdminWorkUsername->TabIndex = 4;
 			this->addAdminWorkUsername->Text = L"testing";
 			this->addAdminWorkUsername->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
@@ -996,10 +1384,10 @@ private:
 			// addAdminWorkText2
 			// 
 			this->addAdminWorkText2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->addAdminWorkText2->Location = System::Drawing::Point(67, 102);
-			this->addAdminWorkText2->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->addAdminWorkText2->Location = System::Drawing::Point(134, 196);
+			this->addAdminWorkText2->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->addAdminWorkText2->Name = L"addAdminWorkText2";
-			this->addAdminWorkText2->Size = System::Drawing::Size(113, 27);
+			this->addAdminWorkText2->Size = System::Drawing::Size(226, 52);
 			this->addAdminWorkText2->TabIndex = 1;
 			this->addAdminWorkText2->Text = L"Password:";
 			this->addAdminWorkText2->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -1007,10 +1395,10 @@ private:
 			// addAdminWorkText1
 			// 
 			this->addAdminWorkText1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->addAdminWorkText1->Location = System::Drawing::Point(67, 51);
-			this->addAdminWorkText1->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->addAdminWorkText1->Location = System::Drawing::Point(134, 98);
+			this->addAdminWorkText1->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->addAdminWorkText1->Name = L"addAdminWorkText1";
-			this->addAdminWorkText1->Size = System::Drawing::Size(113, 27);
+			this->addAdminWorkText1->Size = System::Drawing::Size(226, 52);
 			this->addAdminWorkText1->TabIndex = 0;
 			this->addAdminWorkText1->Text = L"Username:";
 			this->addAdminWorkText1->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -1022,10 +1410,10 @@ private:
 			this->addAdminButton->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->addAdminButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->addAdminButton->ForeColor = System::Drawing::Color::White;
-			this->addAdminButton->Location = System::Drawing::Point(9, 6);
-			this->addAdminButton->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->addAdminButton->Location = System::Drawing::Point(18, 12);
+			this->addAdminButton->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->addAdminButton->Name = L"addAdminButton";
-			this->addAdminButton->Size = System::Drawing::Size(236, 47);
+			this->addAdminButton->Size = System::Drawing::Size(472, 90);
 			this->addAdminButton->TabIndex = 0;
 			this->addAdminButton->Text = L"Add Admin";
 			this->addAdminButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -1035,6 +1423,7 @@ private:
 			// editAdminWorkPanel
 			// 
 			this->editAdminWorkPanel->BackColor = System::Drawing::Color::Tan;
+			this->editAdminWorkPanel->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
 			this->editAdminWorkPanel->Controls->Add(this->editAdminRemoveConfirmPanel);
 			this->editAdminWorkPanel->Controls->Add(this->editAdminWorkConfirmedPassword);
 			this->editAdminWorkPanel->Controls->Add(this->editAdminWorkPassword);
@@ -1046,31 +1435,33 @@ private:
 			this->editAdminWorkPanel->Controls->Add(this->editAdminText2);
 			this->editAdminWorkPanel->Controls->Add(this->editAdminComboBox);
 			this->editAdminWorkPanel->Controls->Add(this->editAdminText1);
-			this->editAdminWorkPanel->Location = System::Drawing::Point(9, 55);
-			this->editAdminWorkPanel->Margin = System::Windows::Forms::Padding(2);
+			this->editAdminWorkPanel->Location = System::Drawing::Point(18, 106);
+			this->editAdminWorkPanel->Margin = System::Windows::Forms::Padding(4);
 			this->editAdminWorkPanel->Name = L"editAdminWorkPanel";
-			this->editAdminWorkPanel->Size = System::Drawing::Size(477, 302);
+			this->editAdminWorkPanel->Size = System::Drawing::Size(954, 581);
 			this->editAdminWorkPanel->TabIndex = 3;
 			// 
 			// editAdminRemoveConfirmPanel
 			// 
-			this->editAdminRemoveConfirmPanel->BackColor = System::Drawing::Color::Maroon;
+			this->editAdminRemoveConfirmPanel->BackColor = System::Drawing::Color::Moccasin;
 			this->editAdminRemoveConfirmPanel->Controls->Add(this->editAdminRemoveCancelButton);
 			this->editAdminRemoveConfirmPanel->Controls->Add(this->editAdminRemoveConfirmButton);
-			this->editAdminRemoveConfirmPanel->Location = System::Drawing::Point(14, 216);
+			this->editAdminRemoveConfirmPanel->Location = System::Drawing::Point(28, 415);
+			this->editAdminRemoveConfirmPanel->Margin = System::Windows::Forms::Padding(6);
 			this->editAdminRemoveConfirmPanel->Name = L"editAdminRemoveConfirmPanel";
-			this->editAdminRemoveConfirmPanel->Size = System::Drawing::Size(448, 64);
+			this->editAdminRemoveConfirmPanel->Size = System::Drawing::Size(896, 123);
 			this->editAdminRemoveConfirmPanel->TabIndex = 9;
 			// 
 			// editAdminRemoveCancelButton
 			// 
-			this->editAdminRemoveCancelButton->BackColor = System::Drawing::Color::MediumSeaGreen;
+			this->editAdminRemoveCancelButton->BackColor = System::Drawing::Color::Red;
 			this->editAdminRemoveCancelButton->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->editAdminRemoveCancelButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editAdminRemoveCancelButton->ForeColor = System::Drawing::Color::White;
-			this->editAdminRemoveCancelButton->Location = System::Drawing::Point(4, 3);
+			this->editAdminRemoveCancelButton->Location = System::Drawing::Point(8, 6);
+			this->editAdminRemoveCancelButton->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->editAdminRemoveCancelButton->Name = L"editAdminRemoveCancelButton";
-			this->editAdminRemoveCancelButton->Size = System::Drawing::Size(218, 57);
+			this->editAdminRemoveCancelButton->Size = System::Drawing::Size(436, 110);
 			this->editAdminRemoveCancelButton->TabIndex = 1;
 			this->editAdminRemoveCancelButton->Text = L"Cancel";
 			this->editAdminRemoveCancelButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -1078,13 +1469,14 @@ private:
 			// 
 			// editAdminRemoveConfirmButton
 			// 
-			this->editAdminRemoveConfirmButton->BackColor = System::Drawing::Color::Red;
+			this->editAdminRemoveConfirmButton->BackColor = System::Drawing::Color::MediumSeaGreen;
 			this->editAdminRemoveConfirmButton->Cursor = System::Windows::Forms::Cursors::Hand;
 			this->editAdminRemoveConfirmButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editAdminRemoveConfirmButton->ForeColor = System::Drawing::Color::White;
-			this->editAdminRemoveConfirmButton->Location = System::Drawing::Point(227, 3);
+			this->editAdminRemoveConfirmButton->Location = System::Drawing::Point(454, 6);
+			this->editAdminRemoveConfirmButton->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->editAdminRemoveConfirmButton->Name = L"editAdminRemoveConfirmButton";
-			this->editAdminRemoveConfirmButton->Size = System::Drawing::Size(218, 57);
+			this->editAdminRemoveConfirmButton->Size = System::Drawing::Size(436, 110);
 			this->editAdminRemoveConfirmButton->TabIndex = 0;
 			this->editAdminRemoveConfirmButton->Text = L"Remove Employee";
 			this->editAdminRemoveConfirmButton->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -1095,10 +1487,10 @@ private:
 			this->editAdminWorkConfirmedPassword->BackColor = System::Drawing::Color::Moccasin;
 			this->editAdminWorkConfirmedPassword->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editAdminWorkConfirmedPassword->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editAdminWorkConfirmedPassword->Location = System::Drawing::Point(213, 172);
-			this->editAdminWorkConfirmedPassword->Margin = System::Windows::Forms::Padding(2);
+			this->editAdminWorkConfirmedPassword->Location = System::Drawing::Point(426, 331);
+			this->editAdminWorkConfirmedPassword->Margin = System::Windows::Forms::Padding(4);
 			this->editAdminWorkConfirmedPassword->Name = L"editAdminWorkConfirmedPassword";
-			this->editAdminWorkConfirmedPassword->Size = System::Drawing::Size(231, 26);
+			this->editAdminWorkConfirmedPassword->Size = System::Drawing::Size(458, 45);
 			this->editAdminWorkConfirmedPassword->TabIndex = 5;
 			this->editAdminWorkConfirmedPassword->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -1107,10 +1499,10 @@ private:
 			this->editAdminWorkPassword->BackColor = System::Drawing::Color::Moccasin;
 			this->editAdminWorkPassword->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editAdminWorkPassword->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editAdminWorkPassword->Location = System::Drawing::Point(213, 131);
-			this->editAdminWorkPassword->Margin = System::Windows::Forms::Padding(2);
+			this->editAdminWorkPassword->Location = System::Drawing::Point(426, 252);
+			this->editAdminWorkPassword->Margin = System::Windows::Forms::Padding(4);
 			this->editAdminWorkPassword->Name = L"editAdminWorkPassword";
-			this->editAdminWorkPassword->Size = System::Drawing::Size(231, 26);
+			this->editAdminWorkPassword->Size = System::Drawing::Size(458, 45);
 			this->editAdminWorkPassword->TabIndex = 4;
 			this->editAdminWorkPassword->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -1119,10 +1511,10 @@ private:
 			this->editAdminWorkUsername->BackColor = System::Drawing::Color::Moccasin;
 			this->editAdminWorkUsername->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
 			this->editAdminWorkUsername->ForeColor = System::Drawing::Color::DarkSlateGray;
-			this->editAdminWorkUsername->Location = System::Drawing::Point(213, 89);
-			this->editAdminWorkUsername->Margin = System::Windows::Forms::Padding(2);
+			this->editAdminWorkUsername->Location = System::Drawing::Point(426, 171);
+			this->editAdminWorkUsername->Margin = System::Windows::Forms::Padding(4);
 			this->editAdminWorkUsername->Name = L"editAdminWorkUsername";
-			this->editAdminWorkUsername->Size = System::Drawing::Size(231, 26);
+			this->editAdminWorkUsername->Size = System::Drawing::Size(458, 45);
 			this->editAdminWorkUsername->TabIndex = 3;
 			this->editAdminWorkUsername->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -1131,10 +1523,10 @@ private:
 			this->editAdminRemoveButton->BackColor = System::Drawing::Color::Red;
 			this->editAdminRemoveButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 9, System::Drawing::FontStyle::Bold));
 			this->editAdminRemoveButton->ForeColor = System::Drawing::Color::White;
-			this->editAdminRemoveButton->Location = System::Drawing::Point(32, 226);
-			this->editAdminRemoveButton->Margin = System::Windows::Forms::Padding(2);
+			this->editAdminRemoveButton->Location = System::Drawing::Point(64, 435);
+			this->editAdminRemoveButton->Margin = System::Windows::Forms::Padding(4);
 			this->editAdminRemoveButton->Name = L"editAdminRemoveButton";
-			this->editAdminRemoveButton->Size = System::Drawing::Size(124, 42);
+			this->editAdminRemoveButton->Size = System::Drawing::Size(248, 81);
 			this->editAdminRemoveButton->TabIndex = 8;
 			this->editAdminRemoveButton->Text = L"Remove Admin";
 			this->editAdminRemoveButton->UseVisualStyleBackColor = false;
@@ -1144,10 +1536,10 @@ private:
 			// 
 			this->editAdminSaveButton->BackColor = System::Drawing::Color::Moccasin;
 			this->editAdminSaveButton->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editAdminSaveButton->Location = System::Drawing::Point(162, 226);
-			this->editAdminSaveButton->Margin = System::Windows::Forms::Padding(2);
+			this->editAdminSaveButton->Location = System::Drawing::Point(324, 435);
+			this->editAdminSaveButton->Margin = System::Windows::Forms::Padding(4);
 			this->editAdminSaveButton->Name = L"editAdminSaveButton";
-			this->editAdminSaveButton->Size = System::Drawing::Size(300, 42);
+			this->editAdminSaveButton->Size = System::Drawing::Size(600, 81);
 			this->editAdminSaveButton->TabIndex = 7;
 			this->editAdminSaveButton->Text = L"Save Admin";
 			this->editAdminSaveButton->UseVisualStyleBackColor = false;
@@ -1156,10 +1548,10 @@ private:
 			// editAdminText4
 			// 
 			this->editAdminText4->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editAdminText4->Location = System::Drawing::Point(18, 171);
-			this->editAdminText4->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editAdminText4->Location = System::Drawing::Point(36, 329);
+			this->editAdminText4->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editAdminText4->Name = L"editAdminText4";
-			this->editAdminText4->Size = System::Drawing::Size(173, 26);
+			this->editAdminText4->Size = System::Drawing::Size(346, 50);
 			this->editAdminText4->TabIndex = 5;
 			this->editAdminText4->Text = L"Confirm Password:";
 			this->editAdminText4->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -1167,10 +1559,10 @@ private:
 			// editAdminText3
 			// 
 			this->editAdminText3->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editAdminText3->Location = System::Drawing::Point(77, 131);
-			this->editAdminText3->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editAdminText3->Location = System::Drawing::Point(154, 252);
+			this->editAdminText3->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editAdminText3->Name = L"editAdminText3";
-			this->editAdminText3->Size = System::Drawing::Size(114, 24);
+			this->editAdminText3->Size = System::Drawing::Size(228, 46);
 			this->editAdminText3->TabIndex = 4;
 			this->editAdminText3->Text = L"Password:";
 			this->editAdminText3->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -1178,10 +1570,10 @@ private:
 			// editAdminText2
 			// 
 			this->editAdminText2->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editAdminText2->Location = System::Drawing::Point(77, 89);
-			this->editAdminText2->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editAdminText2->Location = System::Drawing::Point(154, 171);
+			this->editAdminText2->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editAdminText2->Name = L"editAdminText2";
-			this->editAdminText2->Size = System::Drawing::Size(114, 24);
+			this->editAdminText2->Size = System::Drawing::Size(228, 46);
 			this->editAdminText2->TabIndex = 3;
 			this->editAdminText2->Text = L"Username:";
 			this->editAdminText2->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
@@ -1196,10 +1588,10 @@ private:
 			this->editAdminComboBox->FormattingEnabled = true;
 			this->editAdminComboBox->IntegralHeight = false;
 			this->editAdminComboBox->Items->AddRange(gcnew cli::array< System::Object^  >(2) { L"test", L"testing" });
-			this->editAdminComboBox->Location = System::Drawing::Point(41, 40);
-			this->editAdminComboBox->Margin = System::Windows::Forms::Padding(2);
+			this->editAdminComboBox->Location = System::Drawing::Point(82, 77);
+			this->editAdminComboBox->Margin = System::Windows::Forms::Padding(4);
 			this->editAdminComboBox->Name = L"editAdminComboBox";
-			this->editAdminComboBox->Size = System::Drawing::Size(402, 27);
+			this->editAdminComboBox->Size = System::Drawing::Size(800, 48);
 			this->editAdminComboBox->Sorted = true;
 			this->editAdminComboBox->TabIndex = 2;
 			this->editAdminComboBox->SelectedIndexChanged += gcnew System::EventHandler(this, &AttendanceV2::editAdminComboBox_SelectedIndexChanged);
@@ -1207,27 +1599,30 @@ private:
 			// editAdminText1
 			// 
 			this->editAdminText1->Font = (gcnew System::Drawing::Font(L"Lucida Bright", 12, System::Drawing::FontStyle::Bold));
-			this->editAdminText1->Location = System::Drawing::Point(145, 5);
-			this->editAdminText1->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
+			this->editAdminText1->Location = System::Drawing::Point(290, 10);
+			this->editAdminText1->Margin = System::Windows::Forms::Padding(4, 0, 4, 0);
 			this->editAdminText1->Name = L"editAdminText1";
-			this->editAdminText1->Size = System::Drawing::Size(188, 31);
+			this->editAdminText1->Size = System::Drawing::Size(376, 60);
 			this->editAdminText1->TabIndex = 1;
 			this->editAdminText1->Text = L"Choose an Admin";
 			this->editAdminText1->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			// 
 			// AttendanceV2
 			// 
-			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
+			this->AutoScaleDimensions = System::Drawing::SizeF(12, 25);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::Color::Sienna;
-			this->ClientSize = System::Drawing::Size(662, 687);
+			this->ClientSize = System::Drawing::Size(1324, 1321);
 			this->Controls->Add(this->sidePanel);
+			this->Controls->Add(this->markEmployeePanel);
 			this->Controls->Add(this->adminPanel);
 			this->Controls->Add(this->editAddEmployeePanel);
 			this->Controls->Add(this->settingsPanel);
 			this->Controls->Add(this->login_panel);
-			this->Controls->Add(this->markEmployeePanel);
+			this->Controls->Add(this->ignore_2);
+			this->Controls->Add(this->ignore_1);
 			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
+			this->Margin = System::Windows::Forms::Padding(6);
 			this->Name = L"AttendanceV2";
 			this->ShowIcon = false;
 			this->Text = L"Attendance";
@@ -1240,12 +1635,20 @@ private:
 			this->adminButton->ResumeLayout(false);
 			this->editAddEmployeeButton->ResumeLayout(false);
 			this->markEmployeeButton->ResumeLayout(false);
+			this->markEmployeePanel->ResumeLayout(false);
+			this->markEmployeeBackgroundPanel->ResumeLayout(false);
+			this->markEmployeeActionConfrimPanel->ResumeLayout(false);
 			this->editAddEmployeePanel->ResumeLayout(false);
 			this->addEmployeeWorkPanel->ResumeLayout(false);
 			this->addEmployeeWorkPanel->PerformLayout();
 			this->editEmployeeWorkPanel->ResumeLayout(false);
 			this->editEmployeeWorkPanel->PerformLayout();
 			this->editEmployeeRemoveConfirmPanel->ResumeLayout(false);
+			this->settingsPanel->ResumeLayout(false);
+			this->panel3->ResumeLayout(false);
+			this->panel2->ResumeLayout(false);
+			this->panel1->ResumeLayout(false);
+			this->panel1->PerformLayout();
 			this->adminPanel->ResumeLayout(false);
 			this->addAdminWorkPanel->ResumeLayout(false);
 			this->addAdminWorkPanel->PerformLayout();
@@ -1259,10 +1662,85 @@ private:
 
 // Helper Functions:
 	string toString(String^ str) {
-		return msclr::interop::marshal_as<std::string>(str);
+		return marshal_as<string>(str);
 	}
 
-		System::Void AttendanceV2_Load(System::Object^ sender, System::EventArgs^ e) {
+	String^ toHandle(string str) {
+		return marshal_as<String^>(str);
+	}
+
+	string doubleToString(double input) {
+		ostringstream stream;
+		stream << fixed << setprecision(2) << input; // Set decimal places to 2
+		return stream.str();
+	}
+
+	string getCurrentDateTime() {
+		time_t now = time(0);
+		tm* ltm = localtime(&now);
+
+		stringstream ss;
+		ss << "[" << setfill('0') << setw(2) << (ltm->tm_mon + 1) << "/"    // Month (01-12)
+			<< setfill('0') << setw(2) << ltm->tm_mday << "/"        // Day (01-31)
+			<< (1900 + ltm->tm_year) << " - "                        // Year (YYYY)
+			<< setfill('0') << setw(2) << (ltm->tm_hour % 12 == 0 ? 12 : ltm->tm_hour % 12) << ":" // Hour (12-hour format)
+			<< setfill('0') << setw(2) << ltm->tm_min                // Minutes (00-59)
+			<< (ltm->tm_hour >= 12 ? "PM" : "AM") << "]";                   // AM/PM
+
+		return ss.str();
+	}
+
+	void writeToLog(string message) {
+		string tempFile = "temp_log.txt";
+
+		// Open temp file for writing
+		ofstream outFile(tempFile);
+		if (!outFile) {
+			MessageBox::Show("CANNOT MAKE TEMP LOG FILE.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
+		}
+
+		// Get current date from the computer
+		// [Placeholder: Implement later]
+
+		// Write the new log entry first
+		outFile << getCurrentDateTime() << " " << loggedInAdmin << ": " << message << endl;
+
+		// Open the original log file and append its contents
+		ifstream inFile(logsFile);
+		if (!inFile) {
+			MessageBox::Show("CANNOT OPEN LOG FILE.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
+		}
+
+		// Puts contents into outfile WITHOUT touching memory since this file will get long eventually 
+		outFile << inFile.rdbuf();  
+		inFile.close();
+		outFile.close();
+
+		// Replace original file with the temporary file
+		remove(logsFile.c_str());
+		rename(tempFile.c_str(), logsFile.c_str());
+	}
+
+	
+	System::Void AttendanceV2_Load(System::Object^ sender, System::EventArgs^ e) {
+		// Repainting the panels (in case custom theme)
+		rePaintAllPanels();
+
+		//  Checking if any admin is made yet 
+		bool adminAvail = false;
+		ifstream checkingAdmin(adminsFile);
+		string line;
+		while (getline(checkingAdmin, line)) {
+			if (!line.empty()) {
+				adminAvail = true;
+				break;
+			}
+		}
+		checkingAdmin.close();
+
+		if (adminAvail) {
 			//  Resetting the login text and panel location/vis.
 			login_username->Text = "";
 			login_password->Text = "";
@@ -1275,24 +1753,75 @@ private:
 			// Making everything else invisible
 			sidePanel->Visible = false;
 			markEmployeePanel->Visible = false;
-
+			return;
 		}
+
+	// If not admin is available, send to make admin screen (make WARNING SIGN vis.)
+		// Hiding panel and resizing client
+		login_panel->Visible = false;
+		this->ClientSize = Drawing::Size(530, 370);
+
+		// Making side panel visible and "closing" it
+		sidePanel->Visible = true;
+		sidePanel->Width = 30; 
+
+
+		// Repositionioning panels 
+		repositionMainPanels();
+
+		// Clicking the admin page, then clicking the add admin button
+		adminLabel_Click(nullptr, nullptr);
+		addAdminButton_Click(nullptr, nullptr);
+		
+	}
 	
 
-		System::Void login_button_Click(System::Object^ sender, System::EventArgs^ e) {
-			// Hiding panel and resizing client
-			login_panel->Visible = false;
-			this->ClientSize = Drawing::Size(530, 370);
-			
-			// Making side panel visible and "opening" it
-			sidePanel->Visible = true;
-			sidePanel->Width = 160;
-
-			
-			// Repositionioning panels 
-			repositionMainPanels(); 
-
+	void login_button_Click(System::Object^ sender, System::EventArgs^ e) {
+		
+		// Validating credentials
+		ifstream validatingFile(adminsFile);
+		string line;
+		bool validCredentials = false;
+		while (getline(validatingFile, line)) {
+			string currUsername = line.substr(0, line.find(' '));
+			string currPassword = line.substr(line.find(' ') + 1);
+			if (currUsername == toString(login_username->Text)) {
+				if (currPassword == toString(login_password->Text)) {
+					validCredentials = true;
+					break;
+				}
+			}
 		}
+		validatingFile.close();
+		
+		// If credentials are not valid then let user know and clear for next attempt
+		if (!validCredentials) {
+			MessageBox::Show("Credentials are not correct.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			login_username->Text = "";
+			login_password->Text = "";
+			return;
+		}
+
+		// If passed through wall, then save logged in admin username
+		loggedInAdmin = toString(login_username->Text);
+		
+		// Writting to log that admin logged in
+		writeToLog("User logged in");
+
+
+		// Hiding panel and resizing client
+		login_panel->Visible = false;
+		this->ClientSize = Drawing::Size(530, 370);
+			
+		// Making side panel visible and "opening" it
+		sidePanel->Visible = true;
+		sidePanel->Width = 160;
+
+			
+		// Repositionioning panels 
+		repositionMainPanels(); 
+
+	}
 
 
 // Animation of opening/closing main menu
@@ -1460,7 +1989,26 @@ private:
 		editAdminWorkConfirmedPassword->ForeColor = textColor;
 		editAdminSaveButton->BackColor = thirdBackColor;
 		editAdminSaveButton->ForeColor = textColor;
+		editAdminRemoveConfirmPanel->BackColor = thirdBackColor;
 
+
+		// Mark Employee
+		markEmployeeBackgroundPanel->BackColor = secondBackColor;
+		markEmployeeText1->BackColor = secondBackColor;
+		markEmployeeText1->ForeColor = textColor;
+		markEmployeeText2->BackColor = secondBackColor;
+		markEmployeeText2->ForeColor = textColor;
+		markEmployeeMarkLateButton->BackColor = thirdBackColor;
+		markEmployeeMarkLateButton->ForeColor = textColor;
+		markEmployeeMarkAbsentButton->BackColor = thirdBackColor;
+		markEmployeeMarkAbsentButton->ForeColor = textColor;
+		markEmployeeComboBox->BackColor = thirdBackColor;
+		markEmployeeComboBox->ForeColor = textColor;
+		markEmployeeListView->BackColor = thirdBackColor;
+		markEmployeeListView->ForeColor = textColor;
+		markEmployeeActionConfrimPanel->BackColor = thirdBackColor;
+		markEmployeeAttendanceLimit->BackColor = thirdBackColor;
+		markEmployeeAttendanceLimit->ForeColor = textColor;
 
 
 	}
@@ -1515,17 +2063,81 @@ private:
 	}
 
 	System::Void markEmployeeLabel_Click(System::Object^ sender, System::EventArgs^ e) {
-		// -- red panel -- 
-		// Hiding other panels and showing this one
-		hidePanels();
+		// used to prevent a flash when an absent/late action is made, no need to hide again
+		if (sender != nullptr) {
+			// Hiding other panels and showing this one
+			hidePanels();
+		}
+		
+
+		// Resetting combo box
+		markEmployeeComboBox->SelectedIndex = -1;
+		markEmployeeComboBox->Text = "";
+		markEmployeeComboBox->Items->Clear();
+
+		// Reseting list view
+		markEmployeeListView->Items->Clear();
+
+		// Hiding the confirm panel
+		markEmployeeActionConfrimPanel->Visible = false;
+
+		// Setting the attendance limit text
+		markEmployeeAttendanceLimit->Text = toHandle(doubleToString(settings_PointsLimit));
+
+		// Loading the employees over the limit AND employees to combo box at in same READ
+		ifstream file(employeesFile);
+		string line;
+		if (!file) {
+			MessageBox::Show("Could not open file!.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
+		}
+
+		while (getline(file, line)) {
+			if (line.empty())
+				continue;
+			// Getting all information on employee from line grabbed
+			string eID = line.substr(0, line.find('_'));
+			line = line.substr(line.find('_') + 1);
+			string eFirstName = line.substr(0, line.find('_'));
+			line = line.substr(line.find('_') + 1);
+			string eLastName = line.substr(0, line.find('_'));
+			line = line.substr(line.find('_') + 1);
+			string attenCount = line;
+
+			// Adding employee to the combo box
+			string adminInfoForCombo = eFirstName + " " + eLastName + " : " + eID + " : " + attenCount;
+			String^ adminInfoForCombo_ = gcnew String(adminInfoForCombo.c_str());
+			markEmployeeComboBox->Items->Add(adminInfoForCombo_);
+
+			// Adding employee to the listview
+			if (stod(attenCount) >= settings_PointsLimit) {
+				ListViewItem^ item = gcnew ListViewItem(toHandle(eFirstName + " " + eLastName));
+				item->SubItems->Add(toHandle(eID));
+				item->SubItems->Add(toHandle(attenCount));
+				markEmployeeListView->Items->Add(item);
+			}
+		}
+
+		file.close();
+
+
+		// Making visible after everything loads up
 		markEmployeePanel->Visible = true;
 	}
 
-	
-
 	System::Void settingsLogsLabel_Click(System::Object^ sender, System::EventArgs^ e) {
-		// -- Blue panel --
+		// Hiding all other panels
 		hidePanels();
+		
+		
+
+		// Setting the attendance points setting current values
+
+
+		// Pulling the logs from the log file
+
+
+		// Making the panel visible after the everything loads
 		settingsPanel->Visible = true;
 	}
 
@@ -1557,45 +2169,49 @@ private:
 	// Saving the employee
 	void addEmployeeWorkSaveButton_Click(System::Object^ sender, System::EventArgs^ e) {
 	// CHECKING VALID INPUTS:
+		
 		// Cleaning spaces from text boxes
 		addEmployeeWorkFirstName->Text = addEmployeeWorkFirstName->Text->Trim();
 		addEmployeeWorkLastName->Text = addEmployeeWorkLastName->Text->Trim();
 		addEmployeeWorkEmployeeID->Text = addEmployeeWorkEmployeeID->Text->Trim();
 
+		
 		// Checking if first and last name are inputted
 		if (addEmployeeWorkFirstName->Text == "" || addEmployeeWorkLastName->Text == "") {
 			MessageBox::Show("Please fill in employee's name.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			return;
 		}
-
+	
 		// Checking if first and last name doesn't contain '_'
 		for (int i = 0; i < addEmployeeWorkFirstName->Text->Length; i++){
-			if (addEmployeeWorkFirstName->Text[i] == '_') {
-				MessageBox::Show("First/Last Names can not have an UNDERSCORE", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			if (addEmployeeWorkFirstName->Text[i] == '_' || addEmployeeWorkFirstName->Text[i] == ' ') {
+				MessageBox::Show("First/Last Names can not have an UNDERSCORE/SPACES", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 				return;
 			}
 		}
-
+		
 		for (int i = 0; i < addEmployeeWorkLastName->Text->Length; i++) {
-			if (addEmployeeWorkLastName->Text[i] == '_') {
-				MessageBox::Show("First/Last Names can not have an UNDERSCORE", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			if (addEmployeeWorkLastName->Text[i] == '_' || addEmployeeWorkLastName->Text[i] == ' ') {
+				MessageBox::Show("First/Last Names can not have an UNDERSCORE/SPACES", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 				return;
 			}
 		}
-
+		
 		// Checking if Employee ID is inputted
 		if (addEmployeeWorkEmployeeID->Text == "") {
 			MessageBox::Show("Please fill in Employee ID.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			return;
 		}
 		
+		
 		// Checking if Employee ID is only digits
 		for (int i = 0; i < addEmployeeWorkEmployeeID->Text->Length; i++) {
-			if (!Char::IsDigit(addEmployeeWorkEmployeeID->Text[i])) {
+			if (!Char::IsDigit(addEmployeeWorkEmployeeID->Text[i]) || addEmployeeWorkEmployeeID->Text[i] == ' ') {
 				MessageBox::Show("Please enter only digits for Employee ID.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 				return;
 			}
 		}
+		
 	
 
 		// Checking if Employee ID is unique
@@ -1625,12 +2241,17 @@ private:
 			return;
 		}
 		writingEmployee << toString(addEmployeeWorkEmployeeID->Text) << "_" << toString(addEmployeeWorkFirstName->Text) << "_" << toString(addEmployeeWorkLastName->Text);
-		writingEmployee << "_0" << endl;
+		writingEmployee << "_0.00" << endl;
 		writingEmployee.close();
 
-		
+		// Letting user know aciton was successful
 		MessageBox::Show("Employee added successfully.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
-		
+
+		// Adding action to log
+		writeToLog("Added " + toString(addEmployeeWorkFirstName->Text) + "_" + toString(addEmployeeWorkLastName->Text) 
+			+ "(" + toString(addEmployeeWorkEmployeeID->Text) + ")");
+
+
 		// Resetting the textboxes
 		addEmployeeWorkFirstName->Text = "";
 		addEmployeeWorkLastName->Text = "";
@@ -1705,6 +2326,9 @@ private:
 
 	// User selected an employee
 	int savedEmployeeID = -1;
+	String^ savedEmployeeFName = "";
+	String^ savedEmployeeLName = "";
+	String^ savedEmployeePoints = "";
 	System::Void comboBox1_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
 		// Returning if no employee is selected
 		if (editEmployeeComboBox->SelectedIndex == -1) {
@@ -1726,8 +2350,11 @@ private:
 
 		string employeePoints = employee.substr(employee.find(':') + 2);
 		
-		// Saving the employee ID
-		savedEmployeeID = stoi(employeeID);
+		// Saving the employee information for log and finding when writting
+		savedEmployeeID     = stoi(employeeID);
+		savedEmployeeFName  = toHandle(employeeFirstName);
+		savedEmployeeLName  = toHandle(employeeLastName);
+		savedEmployeePoints = toHandle(employeePoints);
 			
 		// Setting the text boxes
 		editEmployeeWorkFirstName->Text = gcnew String(employeeFirstName.c_str());
@@ -1740,20 +2367,20 @@ private:
 
 	// Save employee button is clicked
 	void editEmployeeWorkSaveButton_Click(System::Object^ sender, System::EventArgs^ e) {
-	// CHECKING IF EMPLOYEE IS SELECTED
+		// CHECKING IF EMPLOYEE IS SELECTED
 		if (editEmployeeComboBox->SelectedIndex == -1) {
 			MessageBox::Show("Please select an employee.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			return;
 		}
 
-	// CHECKING VALID INPUTS:
-		// Cleaning spaces from text boxes
-		editEmployeeWorkFirstName->Text     = editEmployeeWorkFirstName->Text->Trim();
-		editEmployeeWorkLastName->Text      = editEmployeeWorkLastName->Text->Trim();
-		editEmployeeWorkEmployeeID->Text    = editEmployeeWorkEmployeeID->Text->Trim();
+		// CHECKING VALID INPUTS:
+			// Cleaning spaces from text boxes
+		editEmployeeWorkFirstName->Text = editEmployeeWorkFirstName->Text->Trim();
+		editEmployeeWorkLastName->Text = editEmployeeWorkLastName->Text->Trim();
+		editEmployeeWorkEmployeeID->Text = editEmployeeWorkEmployeeID->Text->Trim();
 		editEmployeeWorkCurrentPoints->Text = editEmployeeWorkCurrentPoints->Text->Trim();
 
-		
+
 
 		// Checking if first and last name are inputted
 		if (editEmployeeWorkFirstName->Text == "" || editEmployeeWorkLastName->Text == "") {
@@ -1762,14 +2389,14 @@ private:
 		}
 		// Checking if first and last name doesn't contain '_'
 		for (int i = 0; i < editEmployeeWorkFirstName->Text->Length; i++) {
-			if (editEmployeeWorkFirstName->Text[i] == '_') {
-				MessageBox::Show("First/Last Names can not have an UNDERSCORE", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			if (editEmployeeWorkFirstName->Text[i] == '_' || editEmployeeWorkFirstName->Text[i] == ' ') {
+				MessageBox::Show("First/Last Names can not have an UNDERSCORE/SPACES", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 				return;
 			}
 		}
 		for (int i = 0; i < editEmployeeWorkLastName->Text->Length; i++) {
-			if (editEmployeeWorkLastName->Text[i] == '_') {
-				MessageBox::Show("First/Last Names can not have an UNDERSCORE", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			if (editEmployeeWorkLastName->Text[i] == '_' || editEmployeeWorkLastName->Text[i] == ' ') {
+				MessageBox::Show("First/Last Names can not have an UNDERSCORE/SPACES", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 				return;
 			}
 		}
@@ -1780,18 +2407,31 @@ private:
 		}
 		// Checking if Employee ID is only digits
 		for (int i = 0; i < editEmployeeWorkEmployeeID->Text->Length; i++) {
-			if (!Char::IsDigit(editEmployeeWorkEmployeeID->Text[i])) {
+			if (!Char::IsDigit(editEmployeeWorkEmployeeID->Text[i]) || editEmployeeWorkEmployeeID->Text[i] == ' ') {
 				MessageBox::Show("Please enter only digits for Employee ID.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 				return;
 			}
 		}
-		// Checking if points is only digits (will not allow for decimals [no need])
+		// Checking if points is valid by catching error in conversion
+		double pointsInDouble = 0;
+		try {
+			pointsInDouble = stod(toString(editEmployeeWorkCurrentPoints->Text));
+		}
+		catch (invalid_argument) {
+			MessageBox::Show("Please fix points.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
+		}
+
+		// Checking if points is valid by checking for alphabets
 		for (int i = 0; i < editEmployeeWorkCurrentPoints->Text->Length; i++) {
-			if (!Char::IsDigit(editEmployeeWorkCurrentPoints->Text[i])) {
-				MessageBox::Show("Please enter only digits for Points.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			if (!Char::IsDigit(editEmployeeWorkCurrentPoints->Text[i]) && (editEmployeeWorkCurrentPoints->Text[i] != '.')) {
+				MessageBox::Show("Please fix points.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 				return;
 			}
 		}
+
+		// Changing "invalid" inputs into valid ones before sending to writting
+		editEmployeeWorkCurrentPoints->Text = toHandle(doubleToString(pointsInDouble));
 
 		// Checking if Employee ID is unique (AGAINST: the list we have in the combobox)
 		for (int i = 0; i < editEmployeeComboBox->Items->Count; i++) {
@@ -1807,11 +2447,11 @@ private:
 				return;
 			}
 		}
-		
-	// SAVING THE EMPLOYEE
-		// Getting the employee's info
-		string employeeInfo = toString(editEmployeeWorkEmployeeID->Text) + "_" + toString(editEmployeeWorkFirstName->Text) + "_" + toString(editEmployeeWorkLastName->Text) + "_" + toString(editEmployeeWorkCurrentPoints->Text);
-		
+
+		// SAVING THE EMPLOYEE
+			// Getting the employee's info
+		string employeeInfo = toString(editEmployeeWorkEmployeeID->Text) + "_" + toString(editEmployeeWorkFirstName->Text) + "_" + toString(editEmployeeWorkLastName->Text) + "_" + doubleToString(stod(toString(editEmployeeWorkCurrentPoints->Text)));
+
 		// Reading the file and writing to a new file
 		ifstream inputfile(employeesFile);
 		ofstream writingFile("temp.txt");
@@ -1844,7 +2484,14 @@ private:
 		if (rename("temp.txt", employeesFile.c_str()) != 0) {
 			MessageBox::Show("Error in renaming file! Exit and rename if reached. ERROR: RENAME_FAILED.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
+
+
 		MessageBox::Show("Employee saved successfully.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
+		writeToLog("Changed " + toString(savedEmployeeFName) + "_" + toString(savedEmployeeLName) + "(" + to_string(savedEmployeeID)
+			       + "):[" + toString(savedEmployeePoints) + " pts]" + " -> " 
+			       + toString(editEmployeeWorkFirstName->Text) + "_" + toString(editEmployeeWorkLastName->Text) + "(" + toString(editEmployeeWorkEmployeeID->Text)
+			       + "):[" + doubleToString(stod(toString(editEmployeeWorkCurrentPoints->Text))) + " pts]");
+
 		
 		// Resetting the textboxes
 		editEmployeeWorkFirstName->Text = "";
@@ -1882,14 +2529,17 @@ private:
 			return;
 		}
 
+		string savedForLog = "ERROR:COULD_NOT_REMOVE";
 		// Writing all employees except the one we want to remove
 		while (getline(inputfile, line)) {
 			if (line.empty()) {
 				continue;
 			}
+			
 			string employeeID = line.substr(0, line.find('_'));
 			if (employeeID == to_string(savedEmployeeID)) {
 				// Do not write this employee
+				savedForLog = line;
 				continue;
 			}
 			else {
@@ -1909,6 +2559,8 @@ private:
 		}
 
 		MessageBox::Show("Employee removed successfully.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
+		writeToLog("Removed " + savedForLog);
+
 
 		// Resetting the textboxes
 		editEmployeeWorkFirstName->Text = "";
@@ -1929,7 +2581,7 @@ private:
 
 #pragma endregion
 
-
+#pragma region ADMIN
 // -- ADMIN MENU -- 
 
 	// Adding admin button clicked
@@ -2070,17 +2722,18 @@ private:
 		
 
 
-		// Adding Admin to file:
+	// Adding Admin to file:
 		ofstream writingAdmin(adminsFile, ios::app);
 		if (!writingAdmin.is_open()) {
 			MessageBox::Show("Error opening file.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			return;
 		}
-		writingAdmin << toString(addAdminWorkUsername->Text) << " " << toString(addAdminWorkPassword->Text);
+		writingAdmin << toString(addAdminWorkUsername->Text) << " " << toString(addAdminWorkPassword->Text) << endl;
 		writingAdmin.close();
 		
 		
 		MessageBox::Show("Admin added successfully.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
+		writeToLog("Added ADMIN->" + toString(addAdminWorkUsername->Text));
 		
 		// Reseting boxes 
 		addAdminButton_Click(nullptr, nullptr);
@@ -2218,6 +2871,7 @@ private:
 			MessageBox::Show("Error opening file.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			return;
 		}
+		string savedForLog = "";
 		while (getline(inputfile, line2)) {
 			if (line2.empty()) {
 				continue;
@@ -2225,6 +2879,7 @@ private:
 			string adminUsername_ = line2.substr(0, line2.find(' '));
 			if (adminUsername_ == savedAdminUsername) {
 				// writting the new admin instead of the old one
+				savedForLog = line2;
 				writingFile << newAdmin << endl;
 			}
 			else {
@@ -2242,8 +2897,17 @@ private:
 		if (rename("temp.txt", adminsFile.c_str()) != 0) {
 			MessageBox::Show("Error in renaming file! Exit and rename if reached. ERROR: RENAME_FAILED.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
+
 		MessageBox::Show("Admin saved successfully.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
-		
+
+
+		// Write change of username
+		writeToLog("Changed ADMIN->" + savedAdminUsername + " TO ADMIN->" + toString(editAdminWorkUsername->Text));
+		// If changed password, write after writting the change of username
+		if(editAdminWorkPassword->Text != "")
+			writeToLog("Change ADMIN->" + toString(editAdminWorkUsername->Text) + "'s password");
+
+
 		// Resetting the textboxes
 		editAdminWorkUsername->Text = "";
 		editAdminWorkPassword->Text = "";
@@ -2306,11 +2970,145 @@ private:
 		}
 
 		MessageBox::Show("Admin removed successfully.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
-
+		writeToLog("Removed ADMIN->" + savedAdminUsername);
 
 		// Resetting the combobox and textBoxes
 		editAdminButton_Click(nullptr, nullptr);
 	}
+
+#pragma endregion
+
+#pragma region MARK_EMPLOYEE
+// --- MARK EMPLOYEE ----
+	void markEmployeeComboBox_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
+		// Make action confirm panel insvisble if employee changes
+		markEmployeeActionConfrimPanel->Visible = false;
+	}
+
+	void markEmployeeActionCancelButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		markEmployeeActionConfrimPanel->Visible = false;
+	}
+
+	void markEmployeeMarkLateButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		// Check if an employee is chosen
+		if (markEmployeeComboBox->SelectedIndex == -1) {
+			MessageBox::Show("Please select an employee.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
+		}
+
+		// Change text in action confirm panel to "mark LATE"
+		markEmployeeActionConfirmButton->Text = "Confirm Mark Late";
+
+		// Make action confirm panel visible 
+		markEmployeeActionConfrimPanel->Visible = true;
+	}
+
+	void markEmployeeMarkAbsentButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		// Check if an employee is chosen
+		if (markEmployeeComboBox->SelectedIndex == -1) {
+			MessageBox::Show("Please select an employee.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
+		}
+
+		// Change text in action confirm panel to "mark ABSENT"
+		markEmployeeActionConfirmButton->Text = "Confirm Mark Absent";
+
+		// Make action confirm panel visible 
+		markEmployeeActionConfrimPanel->Visible = true;
+	}
+
+
+	void markEmployeeActionConfirmButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		bool markedLate = true;
+		if (markEmployeeActionConfirmButton->Text == "Confirm Mark Late") 
+			markedLate = true;
+		else
+			markedLate = false;
+
+		// Grabbing employee chosen info
+		string employeeInfo = toString(markEmployeeComboBox->Text);
+		string eFirstName = employeeInfo.substr(0, employeeInfo.find(' '));
+		employeeInfo = employeeInfo.substr(employeeInfo.find(' ') + 1);
+		string eLastName = employeeInfo.substr(0, employeeInfo.find(' '));
+		employeeInfo = employeeInfo.substr(employeeInfo.find(':') + 2);
+		string eID = employeeInfo.substr(0, employeeInfo.find(' '));
+		double ePoints = stod(employeeInfo.substr(employeeInfo.find(':')+2));
+		double savedEPoints = ePoints;
+		// Adding the points needed (late or abesnt points)
+		if (markedLate) 
+			ePoints += settings_latePoints;
+		else
+			ePoints += settings_absentPoints;
+
+		// Making new employee information string
+		employeeInfo = eID + "_" + eFirstName + "_" + eLastName + "_" + doubleToString(ePoints);
+		
+		// Opening files and writting new file
+		ifstream inputfile(employeesFile);
+		ofstream writingFile("temp.txt");
+		string line;
+		if (!inputfile.is_open() || !writingFile.is_open()) {
+			MessageBox::Show("Error opening file.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			return;
+		}
+		while (getline(inputfile, line)) {
+			if (line.empty()) {
+				continue;
+			}
+			string currEmployeeID = line.substr(0, line.find('_'));
+			if (currEmployeeID == eID) {
+				// writting the new employee info instead of the old one
+				writingFile << employeeInfo << endl;
+			}
+			else {
+				// copying over any other employee
+				writingFile << line << endl;
+			}
+		}
+		inputfile.close();
+		writingFile.close();
+
+		// Deleting the old file and renaming the new file
+		if (remove(employeesFile.c_str()) != 0) {
+			MessageBox::Show("Error in removing file! Exit and remove file. ERROR: FILE_REMOVE_FAILED.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
+		if (rename("temp.txt", employeesFile.c_str()) != 0) {
+			MessageBox::Show("Error in renaming file! Exit and rename if reached. ERROR: RENAME_FAILED.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
+
+
+		// Messaging that everything went good
+		MessageBox::Show("Employee's points have been updated.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
+		
+		// Writting to log
+		string action = "";
+		if (markedLate)
+			action = "LATE + " + doubleToString(settings_latePoints) + " pts";
+		else
+			action = "ABSENT + " + doubleToString(settings_absentPoints) + " pts";
+		writeToLog("Marked " + eFirstName + "_" + eLastName + "(" + eID + ")[" + doubleToString(savedEPoints) + " pts] "
+			       + action);
+
+
+		// Resetting the combobox and the listview
+		markEmployeeLabel_Click(nullptr, nullptr);
+
+		// Hidding the panel
+		markEmployeeActionConfrimPanel->Visible = false;
+	}
+#pragma endregion
+	
+
+
+
+
+
+
+
+
+
+
+
 
 
 
