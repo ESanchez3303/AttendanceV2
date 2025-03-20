@@ -24,6 +24,7 @@ void main(array<String^>^ args) {
 			propertiesFileMaking << "limit=10.00" << endl;
 			propertiesFileMaking << "late=1.00" << endl;
 			propertiesFileMaking << "absent=2.00" << endl;
+			propertiesFileMaking << "theme=default" << endl;
 			propertiesFileMaking.close();
 		}
 		else if (!checkingLocation) {
