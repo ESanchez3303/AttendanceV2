@@ -1541,7 +1541,7 @@ public:
 		this->addAdminWorkPanel->Controls->Add(this->addAdminWorkUsername);
 		this->addAdminWorkPanel->Controls->Add(this->addAdminWorkText2);
 		this->addAdminWorkPanel->Controls->Add(this->addAdminWorkText1);
-		this->addAdminWorkPanel->Location = System::Drawing::Point(400, 361);
+		this->addAdminWorkPanel->Location = System::Drawing::Point(10, 58);
 		this->addAdminWorkPanel->Margin = System::Windows::Forms::Padding(2);
 		this->addAdminWorkPanel->Name = L"addAdminWorkPanel";
 		this->addAdminWorkPanel->Size = System::Drawing::Size(479, 304);
@@ -1663,7 +1663,7 @@ public:
 		this->editAdminWorkPanel->Controls->Add(this->editAdminText2);
 		this->editAdminWorkPanel->Controls->Add(this->editAdminComboBox);
 		this->editAdminWorkPanel->Controls->Add(this->editAdminText1);
-		this->editAdminWorkPanel->Location = System::Drawing::Point(9, 55);
+		this->editAdminWorkPanel->Location = System::Drawing::Point(450, 205);
 		this->editAdminWorkPanel->Margin = System::Windows::Forms::Padding(2);
 		this->editAdminWorkPanel->Name = L"editAdminWorkPanel";
 		this->editAdminWorkPanel->Size = System::Drawing::Size(479, 304);
@@ -3210,6 +3210,7 @@ public:
 		
 		// Saving admin information to code variables
 		if (firstTimeSetUp) {
+			cout << "entered" << endl;
 			loggedInAdmin = toString(addAdminWorkUsername->Text);
 			loggedInAdminPassword = toString(addAdminWorkPassword->Text);
 			firstTimeSetUp = false;
