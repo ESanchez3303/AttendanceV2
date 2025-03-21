@@ -166,7 +166,9 @@ namespace AttendanceV2 {
 		System::Windows::Forms::Button^ settingsResetAllConfirmButton;
 		System::Windows::Forms::Label^ settingsText8;
 		System::Windows::Forms::TextBox^ settingsResetAllPasswordInput;
-		System::ComponentModel::IContainer^ components;
+private: System::ComponentModel::IContainer^ components;
+public:
+
 #pragma endregion
 
 
@@ -174,7 +176,8 @@ namespace AttendanceV2 {
 #pragma region Windows Form Designer generated code
 	void InitializeComponent(void){
 		this->components = (gcnew System::ComponentModel::Container());
-		System::Windows::Forms::ListViewItem^ listViewItem2 = (gcnew System::Windows::Forms::ListViewItem(L"employee1"));
+		System::Windows::Forms::ListViewItem^ listViewItem1 = (gcnew System::Windows::Forms::ListViewItem(L"employee1"));
+		System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(AttendanceV2::typeid));
 		this->login_username = (gcnew System::Windows::Forms::TextBox());
 		this->login_password = (gcnew System::Windows::Forms::TextBox());
 		this->login_text1 = (gcnew System::Windows::Forms::Label());
@@ -669,7 +672,7 @@ namespace AttendanceV2 {
 		this->markEmployeeListView->FullRowSelect = true;
 		this->markEmployeeListView->GridLines = true;
 		this->markEmployeeListView->HideSelection = false;
-		this->markEmployeeListView->Items->AddRange(gcnew cli::array< System::Windows::Forms::ListViewItem^  >(1) { listViewItem2 });
+		this->markEmployeeListView->Items->AddRange(gcnew cli::array< System::Windows::Forms::ListViewItem^  >(1) { listViewItem1 });
 		this->markEmployeeListView->Location = System::Drawing::Point(24, 189);
 		this->markEmployeeListView->Margin = System::Windows::Forms::Padding(2);
 		this->markEmployeeListView->MultiSelect = false;
@@ -1848,10 +1851,10 @@ namespace AttendanceV2 {
 		this->Controls->Add(this->ignore_2);
 		this->Controls->Add(this->ignore_1);
 		this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
+		this->Icon = (cli::safe_cast<System::Drawing::Icon^>(resources->GetObject(L"$this.Icon")));
 		this->MaximizeBox = false;
 		this->Name = L"AttendanceV2";
-		this->ShowIcon = false;
-		this->Text = L"  ";
+		this->Text = L"Attendance V2";
 		this->Load += gcnew System::EventHandler(this, &AttendanceV2::AttendanceV2_Load);
 		this->login_panel->ResumeLayout(false);
 		this->login_panel->PerformLayout();
