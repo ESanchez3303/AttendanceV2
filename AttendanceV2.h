@@ -18,6 +18,7 @@ std::string settingsFile  = "C:\\Attendance_v2\\settings.txt";
 
 std::string loggedInAdminPassword = "-1-";
 std::string loggedInAdmin         = "NO_USER";
+bool firstTimeSetUp = false;
 
 namespace AttendanceV2 {
 	using namespace std;
@@ -1134,7 +1135,7 @@ public:
 		this->settingsPanel->Controls->Add(this->settingsResetAllPanel);
 		this->settingsPanel->Controls->Add(this->settingsThemePanel);
 		this->settingsPanel->Controls->Add(this->settingsAttendancePanel);
-		this->settingsPanel->Location = System::Drawing::Point(36, 13);
+		this->settingsPanel->Location = System::Drawing::Point(91, 585);
 		this->settingsPanel->Margin = System::Windows::Forms::Padding(2);
 		this->settingsPanel->Name = L"settingsPanel";
 		this->settingsPanel->Size = System::Drawing::Size(496, 370);
@@ -1504,7 +1505,7 @@ public:
 		this->adminPanel->Controls->Add(this->addAdminButton);
 		this->adminPanel->Controls->Add(this->editAdminWorkPanel);
 		this->adminPanel->ForeColor = System::Drawing::Color::DarkSlateGray;
-		this->adminPanel->Location = System::Drawing::Point(628, 21);
+		this->adminPanel->Location = System::Drawing::Point(36, 6);
 		this->adminPanel->Margin = System::Windows::Forms::Padding(2);
 		this->adminPanel->Name = L"adminPanel";
 		this->adminPanel->Size = System::Drawing::Size(496, 370);
@@ -1673,7 +1674,7 @@ public:
 		this->editAdminRemoveConfirmPanel->BackColor = System::Drawing::Color::Moccasin;
 		this->editAdminRemoveConfirmPanel->Controls->Add(this->editAdminRemoveCancelButton);
 		this->editAdminRemoveConfirmPanel->Controls->Add(this->editAdminRemoveConfirmButton);
-		this->editAdminRemoveConfirmPanel->Location = System::Drawing::Point(14, 216);
+		this->editAdminRemoveConfirmPanel->Location = System::Drawing::Point(14, 218);
 		this->editAdminRemoveConfirmPanel->Name = L"editAdminRemoveConfirmPanel";
 		this->editAdminRemoveConfirmPanel->Size = System::Drawing::Size(448, 64);
 		this->editAdminRemoveConfirmPanel->TabIndex = 9;
@@ -2303,7 +2304,11 @@ public:
 																																	  //
 		// Repositionioning panels 																									  //
 		repositionMainPanels();																										  //
-																																	  //
+																			
+		
+		// Ticking first time set up so that it updates the admin afterSetUp
+		firstTimeSetUp = true;
+		
 		// Clicking the admin page, then clicking the add admin button																  //
 		adminLabel_Click(nullptr, nullptr);																							  //
 		addAdminButton_Click(nullptr, nullptr);																						  //
@@ -2392,7 +2397,11 @@ public:
 		bool animationIsOpening = false;																							  //
 																																	  //
 	// Opening and closing menu functions using MOUSE MOVEMENTS																		  //
-	System::Void openMenu(System::Object^ sender, System::EventArgs^ e) {															  //
+	System::Void openMenu(System::Object^ sender, System::EventArgs^ e) {	
+		// Does not open menu if its first time setup
+		if (firstTimeSetUp)
+			return;
+		
 		sideMenuTimer->Start();																										  //
 		animationIsOpening = true; // using this to say that we are OPENING															  //
 	}																																  //
@@ -3066,6 +3075,10 @@ public:
 
 	String^ savedAdminUsername = "";
 	void editAdminButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		// does not allow to leave screen if no admin is set up yet
+		if (firstTimeSetUp)
+			return;
+
 		// Setting saved admin username as null
 		savedAdminUsername = "";
 
@@ -3195,6 +3208,13 @@ public:
 		MessageBox::Show("Admin added successfully.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
 		writeToLog("Added ADMIN->" + toString(addAdminWorkUsername->Text));
 		
+		// Saving admin information to code variables
+		if (firstTimeSetUp) {
+			loggedInAdmin = toString(addAdminWorkUsername->Text);
+			loggedInAdminPassword = toString(addAdminWorkPassword->Text);
+			firstTimeSetUp = false;
+		}
+
 		// Reseting boxes 
 		addAdminButton_Click(nullptr, nullptr);
 	}
