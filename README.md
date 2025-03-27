@@ -1,3 +1,4 @@
 # AttendanceV2
 
-Currently working on this project. No Updates as of 3.13.25
+Project is finished! Look at release for the photos and the program!
+
