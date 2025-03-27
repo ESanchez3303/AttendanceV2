@@ -3208,12 +3208,10 @@ public:
 		MessageBox::Show("Admin added successfully.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
 		writeToLog("Added ADMIN->" + toString(addAdminWorkUsername->Text));
 		
-		// Saving admin information to code variables
+		// Saving admin information to code variables - forcing to close
 		if (firstTimeSetUp) {
-			cout << "entered" << endl;
-			loggedInAdmin = toString(addAdminWorkUsername->Text);
-			loggedInAdminPassword = toString(addAdminWorkPassword->Text);
-			firstTimeSetUp = false;
+			MessageBox::Show("Admin has been made. Exiting to log in.", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
+			Application::Exit();
 		}
 
 		// Reseting boxes 
